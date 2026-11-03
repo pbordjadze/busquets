@@ -1,0 +1,14 @@
+{ "size": [1179, 2556], "ppp": 3, "seconds": 20, "fps": 30,
+  "_": "The dials over twenty seconds: the bottom side presses up, the top side sits off, the bottom side dares, the top side compacts, the bottom side stretches long, the top side presses high; then two fingers tapped: the rondo.",
+  "events": [
+    { "t": 1.0, "drag": [[196, 690], [196, 520]], "for": 1.2 },
+    { "t": 3.5, "drag": [[196, 240], [196, 380]], "for": 1.0 },
+    { "t": 6.0, "drag": [[90, 640], [330, 640]], "for": 1.0 },
+    { "t": 8.5, "pinch": [[140, 200], [250, 300]], "to": 0.6, "for": 0.8 },
+    { "t": 11.0, "pinch": [[196, 560], [196, 700]], "to": 1.5, "for": 0.8 },
+    { "t": 13.5, "drag": [[196, 380], [196, 160]], "for": 1.0 },
+    { "t": 16.5, "pinch": [[150, 420], [250, 440]], "to": 1.0, "for": 0.12 }
+  ],
+  "shots": [0.5, { "t": 2.3, "name": "press-up" }, { "t": 7.0, "name": "risk" }, { "t": 9.4, "name": "compact" }, { "t": 12.0, "name": "stretch" }, { "t": 15.0, "name": "high-press" }, { "t": 19.5, "name": "rondo" }],
+  "film": { "from": 0, "to": 20, "every": 0.1 },
+  "audio": true }
