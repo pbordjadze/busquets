@@ -55,6 +55,8 @@ pub struct Garden {
     layer: Option<Layer>,
     strokes: Vec<Stroke>,
     pending: Vec<Stroke>,
+    /// The pass in flight: its stroke, waiting for where it lands.
+    flying: Option<Stroke>,
     redraw: bool,
     bells: Bells,
     rng: Rng,
@@ -107,21 +109,17 @@ fn paint_stroke(p: &mut Painter, view: &View, st: &Stroke) {
         }
         return;
     }
-    let (alpha, width) = if st.yours { (0.5, 0.055) } else { (0.11, 0.035) };
+    let (alpha, width) = if st.yours { (0.55, 0.06) } else { (0.14, 0.035) };
     let d = st.b - st.a;
     let n = d.perp().norm();
-    const SEG: usize = 10;
-    for hair in 0..3 {
-        let off = (hair as f32 - 1.0) * 0.05;
-        let mut prev = st.a + n * off;
-        for k in 1..=SEG {
-            let u = k as f32 / SEG as f32;
-            let bow = (u * std::f32::consts::PI).sin() * st.bend;
-            let q = st.a + d * u + n * (bow + off);
-            let fade = 0.8 + 0.2 * (1.0 - u);
-            p.line(view.to_screen(prev), view.to_screen(q), width * s * (1.0 - 0.3 * hair as f32 / 2.0), 0.03 * s, [c[0], c[1], c[2], alpha * fade * 0.6]);
-            prev = q;
-        }
+    // one line, many short overlapping dabs along a bow, the pen thinning as it travels
+    let steps = ((d.len() * s / (width * s * 0.8).max(1.0)) as usize).clamp(8, 600);
+    for k in 0..=steps {
+        let u = k as f32 / steps as f32;
+        let bow = (u * std::f32::consts::PI).sin() * st.bend;
+        let q = st.a + d * u + n * bow;
+        let w = width * (1.0 - 0.45 * u);
+        p.disc(view.to_screen(q), w * s, 0.02 * s, [c[0], c[1], c[2], alpha * 0.18]);
     }
     let pool = if st.yours { 0.12 } else { 0.07 };
     p.disc(view.to_screen(st.a), pool * s, 0.05 * s, [c[0], c[1], c[2], alpha * 0.7]);
@@ -141,6 +139,7 @@ impl Toy for Garden {
             layer: None,
             strokes: Vec::new(),
             pending: Vec::new(),
+            flying: None,
             redraw: true,
             bells,
             rng: Rng::new(5),
@@ -169,18 +168,30 @@ impl Toy for Garden {
             match e {
                 Event::Pass { from, at: a, angle, length, yours, .. } => {
                     let b = a + V2::from_angle(angle) * length;
-                    let st = Stroke { a, b, yours, ink: self.ink_now(), bend: self.rng.s() * 0.25 * length.sqrt() * 0.3, kind: 0 };
-                    self.pending.push(st);
+                    self.flying = Some(Stroke { a, b, yours, ink: self.ink_now(), bend: self.rng.s() * 0.12 * length.sqrt(), kind: 0 });
                     self.passes += 1;
                     let deg = ((angle / std::f32::consts::TAU + 1.0) * 5.0).round() as i32 % 5;
                     let pan = (self.world.players[from].pos.x / 16.0).clamp(-1.0, 1.0);
                     self.bells.strike(Note { freq: pentatonic(if yours { 330.0 } else { 165.0 }, deg), amp: if yours { 0.2 } else { 0.08 }, decay: if yours { 1.6 } else { 0.7 }, pan, bright: 0.4 });
                 }
                 Event::Poked { at, .. } => {
+                    if let Some(mut st) = self.flying.take() {
+                        st.b = at;
+                        self.pending.push(st);
+                    }
                     self.pending.push(Stroke { a: at, b: at, yours: false, ink: 0, bend: 0.0, kind: 1 });
                     self.bells.strike(Note { freq: 98.0, amp: 0.15, decay: 0.6, pan: 0.0, bright: 1.5 });
                 }
-                Event::Received { by: 0, .. } => ctx.haptic(),
+                Event::Received { by, .. } => {
+                    if let Some(mut st) = self.flying.take() {
+                        st.b = self.world.players[by].pos;
+                        self.pending.push(st);
+                        self.bells.strike(Note { freq: 130.0, amp: 0.12, decay: 0.12, pan: 0.0, bright: 3.0 });
+                    }
+                    if by == 0 {
+                        ctx.haptic();
+                    }
+                }
                 _ => {}
             }
         }

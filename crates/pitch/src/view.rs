@@ -39,7 +39,7 @@ impl View {
 }
 
 /// Points a second a release must have to be a pass rather than a look.
-pub const PASS_SPEED: f32 = 320.0;
+pub const PASS_SPEED: f32 = 520.0;
 
 /// What a finger did, for the take to answer (a sound, a haptic).
 #[derive(Clone, Copy, Debug, PartialEq)]

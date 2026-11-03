@@ -60,7 +60,7 @@ fn config() -> Config {
 impl Pulse {
     fn view(&self, ctx: &Ctx) -> View {
         let (w, h) = (ctx.width as f32, ctx.height as f32);
-        View { center: self.cam, scale: w.min(h) / 31.0, size: [w, h], turn: 0.0 }
+        View { center: self.cam, scale: w.min(h) / 24.0, size: [w, h], turn: 0.0 }
     }
     fn hold(&self) -> f32 {
         (1.0 - (self.world.pace - self.world.cfg.hold_pace) / (1.0 - self.world.cfg.hold_pace)).clamp(0.0, 1.0)
@@ -158,9 +158,9 @@ impl Toy for Pulse {
         }
         let pace = self.world.pace;
         for r in &mut self.ripples {
-            r.1 += dt * (0.4 + 0.6 * pace);
+            r.1 += dt * (0.6 + 0.9 * pace);
         }
-        self.ripples.retain(|r| r.1 < 2.0);
+        self.ripples.retain(|r| r.1 < 1.2);
         for s in &mut self.sparks {
             s.1 += dt;
         }
@@ -181,11 +181,13 @@ impl Toy for Pulse {
 
         // the pressers: dark fields, laid first so the light is swallowed around them
         for pl in w.players.iter().filter(|pl| pl.kind == Kind::Presser) {
+            // just seen: a hard-edged hole; remembered: it blurs as the memory ages
+            let fresh = (1.0 - pl.seen_age / 0.6).clamp(0.0, 1.0);
             let known = (1.0 - pl.seen_age / 5.0).clamp(0.3, 1.0);
             let breathe = 1.0 + 0.08 * (wt * 1.3 + pl.home.x).sin();
             let c = sc(pl.seen);
-            p.disc(c, 1.8 * s * breathe, 3.2 * s, [0.0, 0.0, 0.01, 0.85 * known]);
-            p.disc(c, 0.6 * s, 0.8 * s, [0.0, 0.0, 0.0, 0.9 * known]);
+            p.disc(c, 1.8 * s * breathe, (0.15 + 3.0 * (1.0 - fresh)) * s, [0.0, 0.0, 0.01, 0.92 * known]);
+            p.disc(c, 1.0 * s, 1.5 * s, [0.0, 0.0, 0.0, 0.6 * known]);
         }
         p.render(&ctx.gpu, &mut enc, target, size, None);
 
@@ -225,14 +227,19 @@ impl Toy for Pulse {
         for (i, pl) in w.players.iter().enumerate() {
             if pl.kind == Kind::Presser {
                 // a dim violet rim where you last saw it
+                let fresh = (1.0 - pl.seen_age / 0.6).clamp(0.0, 1.0);
                 let known = (1.0 - pl.seen_age / 5.0).clamp(0.2, 1.0);
-                p.glow_ring(sc(pl.seen), 1.15 * s, 0.05 * s, 0.35 * s, [0.45, 0.3, 0.85, 0.22 * known]);
+                let breathe = 1.0 + 0.08 * (wt * 1.3 + pl.home.x).sin();
+                p.glow_ring(sc(pl.seen), 1.85 * s * breathe, 0.04 * s, (0.06 + 0.4 * (1.0 - fresh)) * s, [0.55, 0.4, 0.95, 0.15 + 0.35 * fresh * known]);
                 continue;
             }
             let c = hue(i);
             let tw = 0.85 + 0.15 * (wt * 2.3 + i as f32 * 1.7).sin();
             let spark = self.sparks.iter().filter(|s| s.0 == i).map(|s| 1.0 - s.1).fold(0.0, f32::max);
-            let big = if i == 0 { 1.4 } else { 1.0 };
+            let big = if i == 0 { 1.8 } else { 1.0 };
+            if i == 0 {
+                p.glow_ring(sc(pl.pos), 0.75 * s, 0.03 * s, 0.08 * s, [0.8, 0.9, 1.0, 0.5]);
+            }
             let at = sc(pl.pos);
             p.glow(at, at, 0.15 * s * big, 1.6 * s * big * (1.0 + spark), [c[0], c[1], c[2], (0.22 + 0.3 * spark) * tw]);
             p.glow(at, at, 0.12 * s * big, 0.25 * s, [c[0], c[1], c[2], 0.9 * tw]);
@@ -251,7 +258,7 @@ impl Toy for Pulse {
         p.glow(b, b, 0.12 * s, 2.0 * s, [1.0, 0.92, 0.75, 0.25 + 0.15 * beat]);
         p.glow(b, b, 0.14 * s, 0.2 * s, [1.0, 1.0, 1.0, 1.0]);
         for (at, t, c, a) in &self.ripples {
-            p.glow_ring(sc(*at), (0.5 + t * 4.0) * s, 0.04 * s, 0.25 * s, [c[0], c[1], c[2], a * 0.35 * (1.0 - t / 2.0)]);
+            p.glow_ring(sc(*at), (0.5 + t * 2.5) * s, 0.04 * s, 0.25 * s, [c[0], c[1], c[2], a * 0.3 * (1.0 - t / 1.2)]);
         }
         p.render(&ctx.gpu, &mut enc, target, size, None);
         ctx.gpu.queue.submit([enc.finish()]);

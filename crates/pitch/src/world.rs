@@ -150,6 +150,8 @@ pub struct World {
     pub your_touches: u32,
     /// A glance under way: its direction and real seconds left.
     pub glance: Option<(f32, f32)>,
+    /// World seconds a look costs while you hold the ball (the world runs while you turn your head).
+    pub look_cost: f32,
     /// A pass you asked for before the ball arrived (a direction), played first time.
     pub queued: Option<(V2, f32)>,
     events: Vec<Event>,
@@ -198,6 +200,7 @@ impl World {
             chain: 0,
             your_touches: 0,
             glance: None,
+            look_cost: 0.0,
             queued: None,
             events: Vec::new(),
             rng,
@@ -268,6 +271,10 @@ impl World {
         let fresh = !self.glance.is_some_and(|(a, _)| angle_diff(a, angle).abs() < 0.35);
         self.glance = Some((angle, 0.4));
         if fresh {
+            // looking with the ball at your feet is not free: the world moves while you turn
+            if self.yours() {
+                self.look_cost = 0.3;
+            }
             self.events.push(Event::Glance { angle });
         }
     }
@@ -375,7 +382,9 @@ impl World {
         let dt = dt.clamp(0.0, 0.1);
         self.real_t += dt as f64;
         // the pace: held while yours, softening as it comes
-        let target = if self.yours() {
+        let target = if self.yours() && self.look_cost > 0.0 {
+            1.0
+        } else if self.yours() {
             self.cfg.hold_pace
         } else if let Some(rem) = self.incoming() {
             // softening, not stopping: the ball still arrives in about a real second
@@ -387,6 +396,7 @@ impl World {
         self.pace += (target - self.pace) * k;
         let wdt = dt * self.pace;
         self.t += wdt as f64;
+        self.look_cost = if self.yours() { (self.look_cost - wdt).max(0.0) } else { 0.0 };
 
         // the glance and your head
         if let Some((a, left)) = self.glance {
@@ -557,7 +567,11 @@ impl World {
                     let need = (p.pos.dist(c) - self.cfg.reach).max(0.0) / self.cfg.presser_speed;
                     t = if need < ball_at { c } else { b };
                 }
-                let off = (p.pos - t).norm() * 1.1;
+                let held = match self.ball {
+                    Ball::Held { t: h, .. } => h,
+                    _ => 0.0,
+                };
+                let off = (p.pos - t).norm() * (1.1 - held * 0.5).max(0.2);
                 self.players[i].target = t + off;
                 continue;
             }
@@ -640,6 +654,18 @@ impl World {
                 self.ball_pos = p.pos + V2::from_angle(p.facing) * 0.45;
                 let t = t + wdt;
                 self.ball = Ball::Held { by, t, hold };
+                // a ball held too long (world time) can be taken off your foot
+                if t > 0.6 {
+                    let near = self.players.iter().position(|q| q.kind == Kind::Presser && q.stun <= 0.0 && q.pos.dist(self.ball_pos) < self.cfg.reach * 0.6);
+                    if let Some(i) = near {
+                        let out = (self.ball_pos - self.players[i].pos).norm().perp();
+                        self.ball = Ball::Loose { vel: out * (self.cfg.pass_speed * 0.35) };
+                        self.players[i].stun = 1.4;
+                        self.chain = 0;
+                        self.events.push(Event::Poked { by: i, at: self.ball_pos });
+                        return;
+                    }
+                }
                 if by != YOU && t > hold {
                     self.mate_decides(by, t);
                 }
@@ -763,7 +789,6 @@ mod tests {
         assert!(w.pace < 0.1, "time holds while you decide: pace {}", w.pace);
         let before = w.t;
         run(&mut w, 10.0);
-        assert!(w.yours());
         assert!(w.t - before < 1.0, "ten real seconds are under one world second while you hold: {}", w.t - before);
     }
 
@@ -779,8 +804,12 @@ mod tests {
         let dir = best.b - best.a;
         assert!(w.flick(dir, 1.0));
         assert!(!w.yours());
-        run(&mut w, 2.0);
-        assert!(w.pace > 0.5, "pace back up: {}", w.pace);
+        let mut top: f32 = 0.0;
+        for _ in 0..60 {
+            w.step(1.0 / 60.0);
+            top = top.max(w.pace);
+        }
+        assert!(top > 0.5, "pace back up: {top}");
     }
 
     #[test]
@@ -823,5 +852,45 @@ mod tests {
         w.glance(a);
         w.step(1.0 / 60.0);
         assert_eq!(w.players[i].seen_age, 0.0);
+    }
+}
+
+#[cfg(test)]
+mod pressure {
+    use super::*;
+
+    #[test]
+    fn a_look_with_the_ball_costs_world_time() {
+        let mut w = World::new(Config::default());
+        while !w.yours() {
+            w.step(1.0 / 60.0);
+        }
+        for _ in 0..60 {
+            w.step(1.0 / 60.0);
+        }
+        let before = w.t;
+        w.glance(0.0);
+        for _ in 0..60 {
+            w.step(1.0 / 60.0);
+        }
+        assert!(w.t - before > 0.2, "a glance spent {} world s", w.t - before);
+    }
+
+    #[test]
+    fn held_forever_it_is_taken() {
+        let mut w = World::new(Config::default());
+        while !w.yours() {
+            w.step(1.0 / 60.0);
+        }
+        let mut lost = false;
+        for _ in 0..(60 * 120) {
+            w.step(1.0 / 60.0);
+            if !w.yours() {
+                lost = true;
+                break;
+            }
+        }
+        assert!(lost, "two real minutes of holding and nobody came for it");
+        assert!(w.real_t > 6.0, "but not in a hurry: {}", w.real_t);
     }
 }

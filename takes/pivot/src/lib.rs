@@ -49,7 +49,7 @@ pub struct Pivot {
 impl Pivot {
     fn view(&self, ctx: &Ctx) -> View {
         let (w, h) = (ctx.width as f32, ctx.height as f32);
-        View { center: self.cam, scale: w.min(h) / 30.0, size: [w, h], turn: 0.0 }
+        View { center: self.cam, scale: w.min(h) / 21.0, size: [w, h], turn: 0.0 }
     }
 
     fn hold(&self) -> f32 {
@@ -95,11 +95,14 @@ impl Toy for Pivot {
                     if you {
                         ctx.haptic();
                     }
+                    // the ball meeting a foot
+                    self.bells.strike(Note { freq: 92.0, amp: if you { 0.5 } else { 0.25 }, decay: 0.07, pan: (self.world.players[by].pos.x / 20.0).clamp(-1.0, 1.0), bright: 4.0 });
                     let pan = (self.world.players[by].pos.x / 20.0).clamp(-1.0, 1.0);
                     self.bells.strike(Note { freq: if you { 196.0 } else { 147.0 }, amp: if you { 0.32 } else { 0.16 }, decay: 0.35, pan, bright: if first_time { 2.0 } else { 0.8 } });
                 }
                 Event::Pass { yours, open, from, .. } => {
                     let pan = (self.world.players[from].pos.x / 20.0).clamp(-1.0, 1.0);
+                    self.bells.strike(Note { freq: 110.0, amp: if yours { 0.55 } else { 0.25 }, decay: 0.06, pan, bright: 5.0 });
                     let f = if yours { 262.0 * (1.0 + open * 0.5) } else { 175.0 };
                     self.bells.strike(Note { freq: f, amp: if yours { 0.3 } else { 0.14 }, decay: 0.25, pan, bright: 1.5 });
                 }
