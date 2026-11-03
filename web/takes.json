@@ -43,5 +43,15 @@
     "id": "wash",
     "title": "Wash",
     "bg": "#f2efe6"
+  },
+  {
+    "id": "ghost",
+    "title": "Ghost",
+    "bg": "#05070a"
+  },
+  {
+    "id": "light",
+    "title": "Light",
+    "bg": "#030409"
   }
 ]

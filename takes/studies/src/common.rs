@@ -84,7 +84,7 @@ impl Sim {
             p.b = ball;
         }
         let t = self.time;
-        self.passes.retain(|p| t - p.born < 90.0);
+        self.passes.retain(|p| t - p.born < 120.0);
         if matches!(self.world.ball, Ball::Rolling { .. }) {
             self.trail.push(ball);
         } else if !self.trail.is_empty() {

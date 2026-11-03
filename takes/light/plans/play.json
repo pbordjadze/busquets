@@ -1,0 +1,9 @@
+{ "size": [1179, 2556], "ppp": 3, "seconds": 90, "fps": 30,
+  "_": "Let it build; hold a finger to hurry it for a while; a tap hides the words.",
+  "events": [
+    { "t": 40.0, "down": [196, 500], "id": 1 }, { "t": 70.0, "up": [196, 500], "id": 1 },
+    { "t": 84.0, "tap": [196, 500] }
+  ],
+  "shots": [3, 8, 20, 40, 60, 75, 89],
+  "film": { "from": 0, "to": 90, "every": 0.5 },
+  "audio": false }

@@ -12,3 +12,14 @@ Vendored rather than taken as a git dependency: toy-kit carries the globe and it
 in a large repository whose every CI build would clone it, and is changed round by round for four other
 toys; its own README says it was copied from Adrift "so neither breaks the other". The same reasoning
 holds here. New here: `paint`, `backdrop`, `layer`, `sound`, `web`.
+
+## Real matches: StatsBomb open data
+
+`crates/real`, `takes/ghost` and `takes/light` read [StatsBomb's open data](https://github.com/statsbomb/open-data)
+(events, lineups, 360 freeze-frames). Data provided by StatsBomb. Their
+[Public Data User Agreement](https://github.com/statsbomb/open-data/blob/master/LICENSE.pdf) does not allow the data to
+be distributed or reproduced to third parties (1.2.1) or exploited commercially, along with any analysis derived from
+it (1.2.2), and asks that any published analysis carry the StatsBomb logo (1.4). So none of it is in this repository:
+the takes fetch it at run time from StatsBomb's own repository, and the headless checks read a local cache
+(`tools/fetch-statsbomb.sh`, into the git-ignored `data/`). The apps are for private use; anything beyond that
+(publishing, a store) is Paul's decision and needs StatsBomb's terms read again (their logo, their consent).

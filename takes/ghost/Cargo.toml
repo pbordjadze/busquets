@@ -1,0 +1,23 @@
+[package]
+name = "ghost"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Ghost (a working title): a real match (StatsBomb open data, fetched at run time) replayed on the engine, from above or through any player's eyes; scrub time; change one thing and let the agents play on beside the real ghost."
+
+[lib]
+crate-type = ["lib", "staticlib"]
+
+[dependencies]
+kit = { workspace = true }
+pitch = { workspace = true }
+real = { workspace = true }
+wgpu = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[[bin]]
+name = "ghost-check"
+path = "src/bin/check.rs"

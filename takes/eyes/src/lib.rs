@@ -284,7 +284,6 @@ impl Toy for Eyes {
             Some(Gesture::Flick { dir, speed, .. }) => {
                 self.world.aim = None;
                 self.finger = None;
-                if std::env::var("EYES_DEBUG").is_ok() { eprintln!("{:.2} flick {dir:?} {speed} yours={}", self.time, self.world.yours()); }
                 if speed >= PASS_SPEED {
                     if let Some(d) = self.along_view(dir) {
                         if self.world.kick(d, pace_of(speed)) {
@@ -328,7 +327,6 @@ impl Toy for Eyes {
         for e in self.world.drain() {
             match e {
                 Event::Received { by, first_time, grace } => {
-                    if std::env::var("EYES_DEBUG").is_ok() { eprintln!("{:.2} recv {by} grace {grace:.2}", self.time); }
                     let you = by == 0;
                     if you || grace > 0.8 {
                         self.graces.push((self.world.players[by].pos, 0.0, grace.max(0.3)));
@@ -339,13 +337,11 @@ impl Toy for Eyes {
                     self.bells.strike(Note { freq: if you { 196.0 } else { 147.0 }, amp: if you { 0.3 } else { 0.15 }, decay: 0.35, pan, bright: if first_time { 2.0 } else { 0.8 } });
                 }
                 Event::Pass { yours, open, .. } => {
-                    if std::env::var("EYES_DEBUG").is_ok() { eprintln!("{:.2} pass yours={yours}", self.time); }
                     self.bells.strike(Note { freq: 110.0, amp: if yours { 0.55 } else { 0.22 }, decay: 0.06, pan: 0.0, bright: 5.0 });
                     let f = if yours { 262.0 * (1.0 + open * 0.5) } else { 175.0 };
                     self.bells.strike(Note { freq: f, amp: if yours { 0.3 } else { 0.12 }, decay: 0.25, pan: 0.0, bright: 1.5 });
                 }
                 Event::Poked { at, .. } => {
-                    if std::env::var("EYES_DEBUG").is_ok() { eprintln!("{:.2} poked", self.time); }
                     self.bursts.push((at, 0.0));
                     self.bells.strike(Note { freq: 82.0, amp: 0.35, decay: 0.5, pan: 0.0, bright: 3.0 });
                 }

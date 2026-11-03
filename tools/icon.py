@@ -86,7 +86,71 @@ def garden():
     return img
 
 
-TAKES = {'pivot': pivot, 'pulse': pulse, 'garden': garden}
+def ghost():
+    # a night pitch seen low, a figure solid and one a ghost ring
+    img = Image.new('RGBA', (N, N), (6, 9, 14, 255))
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, N * 0.55, N, N], fill=(10, 30, 18, 255))
+    d.line([0, N * 0.72, N, N * 0.6], fill=(150, 170, 160, 255), width=6)
+    st = layer()
+    sd = ImageDraw.Draw(st)
+    sd.rounded_rectangle([N * 0.36, N * 0.3, N * 0.5, N * 0.62], radius=40, fill=(250, 212, 140, 255))
+    sd.ellipse([N * 0.39, N * 0.2, N * 0.47, N * 0.28], fill=(220, 185, 150, 255))
+    sd.rounded_rectangle([N * 0.58, N * 0.36, N * 0.68, N * 0.6], radius=30, outline=(140, 175, 235, 200), width=8)
+    blur_over(img, st, 3)
+    return img
+
+
+def light():
+    img = Image.new('RGBA', (N, N), (4, 5, 10, 255))
+    random.seed(11)
+    c = (N * 0.5, N * 0.5)
+    hues = [(255, 184, 97), (250, 230, 200), (128, 168, 255)]
+    for k in range(70):
+        a = (c[0] + random.gauss(0, 140), c[1] + random.gauss(0, 110))
+        b = (a[0] + random.gauss(0, 220), a[1] + random.gauss(-60, 160))
+        lay = layer()
+        ImageDraw.Draw(lay).line([a, b], fill=hues[k % 3] + (90,), width=6)
+        img.alpha_composite(lay.filter(ImageFilter.GaussianBlur(3)))
+    st = layer()
+    ImageDraw.Draw(st).ellipse([c[0] - 22, c[1] - 22, c[0] + 22, c[1] + 22], fill=(255, 250, 240, 255))
+    blur_over(img, st, 10)
+    return img
+
+
+def watch():
+    img = Image.new('RGBA', (N, N), (12, 20, 15, 255))
+    d = ImageDraw.Draw(img)
+    d.rectangle([262, 90, 762, 934], outline=(120, 170, 130, 255), width=6)
+    d.line([262, 512, 762, 512], fill=(120, 170, 130, 255), width=6)
+    random.seed(4)
+    for team, col, y0 in ((0, (205, 228, 248), 560), (1, (238, 110, 95), 140)):
+        for k in range(10):
+            x = 300 + (k % 4) * 140 + random.randint(-30, 30)
+            y = y0 + (k // 4) * 120 + random.randint(-20, 20)
+            d.ellipse([x - 18, y - 18, x + 18, y + 18], fill=col + (255,))
+    return img
+
+
+def eyes():
+    img = Image.new('RGBA', (N, N))
+    d = ImageDraw.Draw(img)
+    for y in range(N):
+        k = y / N
+        c = (int(20 + 40 * k), int(26 + 50 * k), int(60 + 30 * k)) if y < 470 else (int(22 + 30 * k), int(70 + 60 * k), int(38 + 20 * k))
+        d.line([(0, y), (N, y)], fill=c + (255,))
+    d.rectangle([0, 440, N, 470], fill=(14, 16, 20, 255))
+    lamp = layer()
+    ImageDraw.Draw(lamp).ellipse([746, 366, 774, 394], fill=(255, 250, 230, 255))
+    blur_over(img, lamp, 20)
+    d = ImageDraw.Draw(img)
+    for x, y, s, col in ((560, 560, 0.6, (238, 110, 95)), (330, 720, 1.0, (245, 240, 228))):
+        d.ellipse([x - 40 * s, y - 120 * s, x + 40 * s, y - 40 * s], fill=(190, 150, 120, 255))
+        d.rounded_rectangle([x - 70 * s, y - 40 * s, x + 70 * s, y + 140 * s], 30 * s, fill=col + (255,))
+    return img
+
+
+TAKES = {'watch': watch, 'eyes': eyes, 'pivot': pivot, 'pulse': pulse, 'garden': garden, 'ghost': ghost, 'light': light}
 
 if __name__ == '__main__':
     for t in sys.argv[1:] or TAKES:

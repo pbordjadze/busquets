@@ -44,7 +44,7 @@ fn strand(p: &mut Painter, a: [f32; 2], b: [f32; 2], strands: u32, width: f32, t
 impl Toy for Lines {
     fn new(ctx: &mut Ctx) -> anyhow::Result<Self> {
         let mut sim = Sim::new(9);
-        for _ in 0..(WARM * 2.0 * 30.0) as usize {
+        for _ in 0..(WARM * 5.0 * 30.0) as usize {
             sim.tick(1.0 / 30.0);
         }
         let [hx, hy] = HALF;

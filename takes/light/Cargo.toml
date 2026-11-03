@@ -1,0 +1,23 @@
+[package]
+name = "light"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Light (a working title): every pass Busquets made in the open data (StatsBomb, fetched at run time), drawn as light on a dark pitch, building over time."
+
+[lib]
+crate-type = ["lib", "staticlib"]
+
+[dependencies]
+kit = { workspace = true }
+pitch = { workspace = true }
+real = { workspace = true }
+wgpu = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[[bin]]
+name = "light-check"
+path = "src/bin/check.rs"

@@ -16,6 +16,8 @@ pub async fn start(take: String) -> Result<(), JsValue> {
         "paper" => kit::web::run::<studies::Paper>("take", &key).await,
         "lines" => kit::web::run::<studies::Lines>("take", &key).await,
         "wash" => kit::web::run::<studies::Wash>("take", &key).await,
+        "ghost" => kit::web::run::<ghost::Ghost>("take", &key).await,
+        "light" => kit::web::run::<light::Light>("take", &key).await,
         _ => Err(JsValue::from_str("no such take")),
     }
 }

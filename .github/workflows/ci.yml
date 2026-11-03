@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        take: [pivot, pulse, garden, watch, eyes]
+        take: [pivot, pulse, garden, watch, eyes, ghost, light]
     steps:
       - uses: actions/checkout@v5
         with: { persist-credentials: false }
@@ -52,6 +52,8 @@ jobs:
           cargo clippy --release -p pitch -p ${{ matrix.take }} -- -D warnings || echo "::warning::clippy has findings"
       - name: Play every plan
         run: |
+          # ghost and light read real matches: StatsBomb open data, fetched here, never committed (NOTICE.md)
+          if [ "${{ matrix.take }}" = ghost ] || [ "${{ matrix.take }}" = light ]; then bash tools/fetch-statsbomb.sh; fi
           mkdir -p build/out
           for p in takes/${{ matrix.take }}/plans/*.json; do
             n=$(basename "$p" .json)
@@ -100,7 +102,7 @@ jobs:
       - name: Build the IPAs
         run: |
           mkdir -p out
-          for take in pivot pulse garden; do
+          for take in pivot pulse garden watch eyes ghost light; do
             BUILD="$BUILD" bash ios/build.sh $take out 2>&1 | tee out/$take-build.log | tail -20
             ls -l out/$take.ipa
           done
@@ -110,7 +112,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           git log -1 --format=%s > out/notes.txt
-          for take in pivot pulse garden; do
+          for take in pivot pulse garden watch eyes ghost light; do
             TAG="$take-build-$BUILD"
             NAME="$(python3 -c "import json; print(json.load(open('takes/$take/toy.json'))['name'])")"
             if gh release view "$TAG" > /dev/null 2>&1; then
