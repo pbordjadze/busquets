@@ -10,6 +10,12 @@ pub async fn start(take: String) -> Result<(), JsValue> {
         "pivot" => kit::web::run::<pivot::Pivot>("take", &key).await,
         "pulse" => kit::web::run::<pulse::Pulse>("take", &key).await,
         "garden" => kit::web::run::<garden::Garden>("take", &key).await,
+        "watch" => kit::web::run::<watch::Watch>("take", &key).await,
+        "eyes" => kit::web::run::<eyes::Eyes>("take", &key).await,
+        "night" => kit::web::run::<studies::Night>("take", &key).await,
+        "paper" => kit::web::run::<studies::Paper>("take", &key).await,
+        "lines" => kit::web::run::<studies::Lines>("take", &key).await,
+        "wash" => kit::web::run::<studies::Wash>("take", &key).await,
         _ => Err(JsValue::from_str("no such take")),
     }
 }

@@ -1,8 +1,11 @@
 //! From the world to the screen and back, and the fingers' grammar every take shares:
 //!
 //! - a finger that moves is a look: you glance where it points (and keep looking while it moves);
-//! - let it go fast and it is a pass that way (with the ball, or first time when the ball is coming);
-//! - a tap on a teammate passes to them; a tap anywhere else looks there.
+//!   with the ball, the pressers read that look, so a look one way and a pass the other is a feint;
+//! - let it go fast and it is a pass that way, its pace the finger's speed (`pace_of`): weighting the
+//!   pass is in the hand. While the finger moves with the ball, `World::aim` holds the pass it would
+//!   make, for the take to draw;
+//! - a tap on a teammate passes to them, weighted for you; a tap anywhere else looks there.
 
 use crate::gesture::{Gesture, Gestures};
 use crate::v2::{v2, V2};
@@ -41,6 +44,12 @@ impl View {
 /// Points a second a release must have to be a pass rather than a look.
 pub const PASS_SPEED: f32 = 520.0;
 
+/// A release's speed (points a second) as the ball's pace (m/s): continuous, from a gentle 6 m/s
+/// at the threshold to a driven 26 m/s.
+pub fn pace_of(finger: f32) -> f32 {
+    (6.0 + (finger - PASS_SPEED).max(0.0) / 130.0).min(26.0)
+}
+
 /// What a finger did, for the take to answer (a sound, a haptic).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Touch {
@@ -63,20 +72,24 @@ pub fn drive(world: &mut World, g: &mut Gestures, view: &View, ppp: f32, id: u64
         2 => g.up(id, x, y, t),
         _ => {
             g.cancel(id);
+            world.aim = None;
             None
         }
     };
     match gesture {
         Some(Gesture::Swipe { dir, .. }) => {
-            world.glance(view.dir_to_world(dir).angle());
+            let d = view.dir_to_world(dir);
+            world.glance(d.angle());
+            let fast = g.speed(id, t).unwrap_or(0.0);
+            world.aim = (world.yours() && fast >= PASS_SPEED).then(|| (d, pace_of(fast)));
             Touch::Looked
         }
         Some(Gesture::Flick { dir, speed, .. }) => {
+            world.aim = None;
             if speed < PASS_SPEED {
                 return Touch::Looked;
             }
-            let strength = (0.85 + (speed - PASS_SPEED) / 3000.0).clamp(0.85, 1.3);
-            if world.flick(view.dir_to_world(dir), strength) {
+            if world.kick(view.dir_to_world(dir), pace_of(speed)) {
                 Touch::Passed
             } else {
                 Touch::Nothing

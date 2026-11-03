@@ -50,10 +50,8 @@ pub struct Pulse {
 
 fn config() -> Config {
     Config {
-        shape: vec![v2(-6.0, -10.0), v2(6.0, -10.0), v2(-13.0, 0.0), v2(13.0, 0.0), v2(-7.0, 9.0), v2(7.0, 9.0), v2(0.0, 15.0)],
-        pressers: vec![v2(-3.0, 5.0), v2(3.5, 5.5), v2(0.0, -5.0)],
         seed: 11,
-        ..Config::default()
+        ..Config::rondo(v2(0.0, 0.0), &[v2(-6.0, -10.0), v2(6.0, -10.0), v2(-13.0, 0.0), v2(13.0, 0.0), v2(-7.0, 9.0), v2(7.0, 9.0), v2(0.0, 15.0)], &[v2(-3.0, 5.0), v2(3.5, 5.5), v2(0.0, -5.0)], 19.0)
     }
 }
 
@@ -121,7 +119,11 @@ impl Toy for Pulse {
                         self.bells.strike(Note { freq: f * 0.5, amp: 0.12, decay: 3.0, pan, bright: 0.2 });
                     }
                 }
-                Event::Received { by, .. } => {
+                Event::Received { by, grace, .. } => {
+                    if grace > 0.75 {
+                        let f = pentatonic(440.0, (self.world.chain % 5) as i32);
+                        self.bells.strike(Note { freq: f, amp: 0.1 * grace, decay: 2.5, pan: 0.0, bright: 0.3 });
+                    }
                     let c = self.hue(by);
                     let at = self.world.players[by].pos;
                     self.ripples.push((at, 0.0, c, if by == 0 { 1.0 } else { 0.6 }));
@@ -148,7 +150,7 @@ impl Toy for Pulse {
         }
         let want = self.world.players[0].pos * 0.6 + self.world.center * 0.4;
         self.cam = self.cam.lerp(want, 1.0 - (-dt * 0.8).exp());
-        if matches!(self.world.ball, Ball::Flight { .. } | Ball::Loose { .. }) {
+        if matches!(self.world.ball, Ball::Rolling { .. }) {
             self.trail.push(self.world.ball_pos);
             if self.trail.len() > 28 {
                 self.trail.remove(0);
@@ -185,7 +187,7 @@ impl Toy for Pulse {
             let fresh = (1.0 - pl.seen_age / 0.6).clamp(0.0, 1.0);
             let known = (1.0 - pl.seen_age / 5.0).clamp(0.3, 1.0);
             let breathe = 1.0 + 0.08 * (wt * 1.3 + pl.home.x).sin();
-            let c = sc(pl.seen);
+            let c = sc(pl.seen + pl.lean * (pl.commit * 1.4));
             p.disc(c, 1.8 * s * breathe, (0.15 + 3.0 * (1.0 - fresh)) * s, [0.0, 0.0, 0.01, 0.92 * known]);
             p.disc(c, 1.0 * s, 1.5 * s, [0.0, 0.0, 0.0, 0.6 * known]);
         }

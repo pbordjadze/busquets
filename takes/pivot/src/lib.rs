@@ -43,6 +43,8 @@ pub struct Pivot {
     cam: V2,
     trail: Vec<V2>,
     bursts: Vec<(V2, f32)>,
+    /// A weight that met its player well: where, how long ago, how well.
+    graces: Vec<(V2, f32, f32)>,
     time: f32,
 }
 
@@ -71,6 +73,7 @@ impl Toy for Pivot {
             bells,
             trail: Vec::new(),
             bursts: Vec::new(),
+            graces: Vec::new(),
             time: 0.0,
         })
     }
@@ -90,7 +93,10 @@ impl Toy for Pivot {
         self.world.step(dt);
         for e in self.world.drain() {
             match e {
-                Event::Received { by, first_time } => {
+                Event::Received { by, first_time, grace } => {
+                    if by == 0 || grace > 0.8 {
+                        self.graces.push((self.world.players[by].pos, 0.0, grace));
+                    }
                     let you = by == 0;
                     if you {
                         ctx.haptic();
@@ -119,7 +125,7 @@ impl Toy for Pivot {
         // the camera follows you and leans toward the ball
         let want = self.world.players[0].pos * 0.7 + self.world.ball_pos * 0.3;
         self.cam = self.cam.lerp(want, 1.0 - (-dt * 1.5).exp());
-        if matches!(self.world.ball, Ball::Flight { .. } | Ball::Loose { .. }) {
+        if matches!(self.world.ball, Ball::Rolling { .. }) {
             self.trail.push(self.world.ball_pos);
         } else if !self.trail.is_empty() {
             self.trail.remove(0);
@@ -131,6 +137,10 @@ impl Toy for Pivot {
             b.1 += dt;
         }
         self.bursts.retain(|b| b.1 < 1.0);
+        for g in &mut self.graces {
+            g.1 += dt;
+        }
+        self.graces.retain(|g| g.1 < 1.4);
         let _ = ctx;
     }
 
@@ -147,7 +157,7 @@ impl Toy for Pivot {
             &mut enc,
             target,
             size,
-            &BackdropParams { time: self.time, scale: s, center: view.center.arr(), p: [hold, 0.0, you.x, you.y, w.cfg.area + 1.0, 0.0, 0.0, 0.0] },
+            &BackdropParams { time: self.time, scale: s, center: view.center.arr(), p: [hold, 0.0, you.x, you.y, w.cfg.half.x + 1.0, 0.0, 0.0, 0.0] },
         );
         let p = &mut self.painter;
         let sc = |q: V2| view.to_screen(q);
@@ -164,6 +174,23 @@ impl Toy for Pivot {
                 let b = sc(l.b);
                 p.glow(a, b, 0.06 * s * o, 0.35 * s, [1.0, 0.85, 0.45, 0.22 * o * k]);
                 p.glow(a, b, 0.02 * s, 0.05 * s, [1.0, 0.93, 0.7, 0.55 * o * o * k]);
+            }
+        }
+        // the pass in your hand: its path at the finger's pace, and who it would come to
+        if let Some((dir, pace)) = w.aim {
+            if let Some(o) = w.preview(dir * pace) {
+                let from = w.ball_pos;
+                let good = o.fate == pitch::Fate::Received;
+                let c = if good { [1.0, 0.95, 0.75] } else { [1.0, 0.45, 0.4] };
+                let mut prev = from;
+                for k in 1..=24 {
+                    let q = w.roll(from, dir * pace, o.t * k as f32 / 24.0).0;
+                    if k % 2 == 0 {
+                        p.glow(sc(prev), sc(q), 0.05 * s, 0.15 * s, [c[0], c[1], c[2], 0.5]);
+                    }
+                    prev = q;
+                }
+                p.glow_ring(sc(o.at), 0.6 * s, 0.05 * s, 0.1 * s, [c[0], c[1], c[2], 0.7]);
             }
         }
         // shadows
@@ -197,6 +224,11 @@ impl Toy for Pivot {
                     let memory = (1.0 - age / 4.0).clamp(0.25, 1.0);
                     let c = sc(pl.seen);
                     if fresh > 0.0 {
+                        // its body leans toward its guess: the more committed, the further
+                        let lean = sc(pl.seen + pl.lean * (pl.commit * 0.9));
+                        if pl.commit > 0.05 {
+                            p.line(c, lean, 0.6 * s, 0.06 * s, [0.93, 0.42, 0.36, fresh * (0.5 + 0.5 * pl.commit)]);
+                        }
                         p.disc(c, 0.72 * s, 0.06 * s, [0.93, 0.42, 0.36, fresh]);
                     }
                     p.ring(c, 0.72 * s, 0.09 * s, 0.05 * s, [0.95, 0.5, 0.45, memory * (1.0 - fresh)]);
@@ -228,6 +260,11 @@ impl Toy for Pivot {
         p.disc(sc(b + pitch::v2(0.08, -0.1)), 0.3 * s, 0.1 * s, [0.0, 0.0, 0.0, 0.35]);
         p.disc(sc(b), 0.28 * s, 0.04 * s, [1.0, 1.0, 0.98, 1.0]);
         p.glow(sc(b), sc(b), 0.2 * s, 0.6 * s, [1.0, 1.0, 0.9, 0.12 + 0.2 * hold]);
+        for (at, t, g) in &self.graces {
+            let k = 1.0 - t / 1.4;
+            p.glow_ring(sc(*at), (0.9 + t * 1.2) * s, 0.05 * s, 0.3 * s, [1.0, 0.9, 0.6, 0.45 * k * g]);
+            p.glow(sc(*at), sc(*at), 0.4 * s, 1.5 * s, [1.0, 0.92, 0.7, 0.18 * k * g]);
+        }
         for (at, t) in &self.bursts {
             p.glow_ring(sc(*at), (0.4 + t * 2.5) * s, 0.06 * s, 0.15 * s, [1.0, 0.6, 0.5, 0.5 * (1.0 - t)]);
         }

@@ -1,5 +1,47 @@
 [
-  { "id": "pivot", "title": "Pivot", "bg": "#0b1f12" },
-  { "id": "pulse", "title": "Pulse", "bg": "#05060d" },
-  { "id": "garden", "title": "Rondo Garden", "bg": "#e9e3d4" }
+  {
+    "id": "pivot",
+    "title": "Pivot",
+    "bg": "#0b1f12"
+  },
+  {
+    "id": "pulse",
+    "title": "Pulse",
+    "bg": "#05060d"
+  },
+  {
+    "id": "garden",
+    "title": "Rondo Garden",
+    "bg": "#e9e3d4"
+  },
+  {
+    "id": "watch",
+    "title": "Watch",
+    "bg": "#0d120f"
+  },
+  {
+    "id": "eyes",
+    "title": "Eyes",
+    "bg": "#10140f"
+  },
+  {
+    "id": "night",
+    "title": "Night Cam",
+    "bg": "#030406"
+  },
+  {
+    "id": "paper",
+    "title": "Paper Cut",
+    "bg": "#d9d2c3"
+  },
+  {
+    "id": "lines",
+    "title": "Living Lines",
+    "bg": "#0a0a0a"
+  },
+  {
+    "id": "wash",
+    "title": "Wash",
+    "bg": "#f2efe6"
+  }
 ]

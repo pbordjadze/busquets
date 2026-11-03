@@ -1,0 +1,17 @@
+[package]
+name = "studies"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Visual directions: four looks for the same engine, each a ten-second loop of the rondo playing itself."
+
+[dependencies]
+kit = { workspace = true }
+pitch = { workspace = true }
+wgpu = { workspace = true }
+anyhow = { workspace = true }
+
+[[bin]]
+name = "studies-check"
+path = "src/bin/check.rs"

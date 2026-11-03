@@ -279,7 +279,13 @@ pub fn play<T: Toy>(name: &str, plan: &Plan, out: &Path, size: Option<[u32; 2]>,
 
 /// The command line of a toy's `check` binary.
 pub fn main<T: Toy>(name: &str) {
-    let args: Vec<String> = std::env::args().collect();
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    main_with::<T>(name, &args)
+}
+
+/// The same, with the arguments given (a binary that checks several toys picks one first).
+pub fn main_with<T: Toy>(name: &str, given: &[String]) {
+    let args: Vec<String> = std::iter::once(String::new()).chain(given.iter().cloned()).collect();
     let flag = |k: &str| args.iter().position(|a| a == k).and_then(|i| args.get(i + 1)).cloned();
     let size = flag("--size").and_then(|s| {
         let (a, b) = s.split_once('x')?;

@@ -66,18 +66,15 @@ pub struct Garden {
 
 fn config() -> Config {
     Config {
-        shape: vec![v2(-8.0, -8.0), v2(8.0, -8.0), v2(-12.0, 3.0), v2(12.0, 3.0), v2(0.0, 12.0)],
-        pressers: vec![v2(-2.5, 4.0), v2(3.0, -3.5)],
-        area: 16.0,
-        pass_speed: 9.5,
-        mate_speed: 3.6,
-        presser_speed: 3.4,
-        mate_hold: [0.9, 1.9],
+        run_speed: 3.6,
+        kick: [6.0, 12.0],
+        friction: 1.6,
+        hold: [0.9, 1.9],
         hold_pace: 0.03,
         soften: 0.9,
         drift: 1.4,
         seed: 23,
-        ..Config::default()
+        ..Config::rondo(v2(0.0, 0.0), &[v2(-8.0, -8.0), v2(8.0, -8.0), v2(-12.0, 3.0), v2(12.0, 3.0), v2(0.0, 12.0)], &[v2(-2.5, 4.0), v2(3.0, -3.5)], 16.0)
     }
 }
 

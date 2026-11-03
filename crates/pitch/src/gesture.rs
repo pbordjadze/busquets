@@ -75,6 +75,15 @@ impl Gestures {
         Some(Gesture::Flick { from: d.at, dir: [dx / l, dy / l], speed, id })
     }
 
+    /// The finger's speed now (points a second, over the last moment), if it is down.
+    pub fn speed(&self, id: u64, t: f64) -> Option<f32> {
+        let d = self.downs.get(&id)?;
+        let (rx, ry) = (d.last[0] - d.recent[0], d.last[1] - d.recent[1]);
+        let rt = (d.last_t - d.recent_t).max(1.0 / 120.0) as f32;
+        let _ = t;
+        Some((rx * rx + ry * ry).sqrt() / rt)
+    }
+
     pub fn cancel(&mut self, id: u64) {
         self.downs.remove(&id);
     }

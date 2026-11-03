@@ -84,12 +84,15 @@ checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 name = "busquets-web"
 version = "0.1.0"
 dependencies = [
+ "eyes",
  "garden",
  "kit",
  "pivot",
  "pulse",
+ "studies",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+ "watch",
 ]
 
 [[package]]
@@ -207,6 +210,16 @@ name = "equivalent"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00d174d5400e5e8fd687ad1049e2f578285fa914201b1af7e8b112a4546bd826"
+
+[[package]]
+name = "eyes"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "kit",
+ "pitch",
+ "wgpu",
+]
 
 [[package]]
 name = "fdeflate"
@@ -827,6 +840,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
+name = "studies"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "kit",
+ "pitch",
+ "wgpu",
+]
+
+[[package]]
 name = "syn"
 version = "2.0.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -951,6 +974,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b1f9c3798725016c6ee5f2f57869ec0831e8bbc0ab0310a86e787e97f41389e"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "watch"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "kit",
+ "pitch",
+ "wgpu",
 ]
 
 [[package]]
