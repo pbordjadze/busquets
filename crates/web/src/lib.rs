@@ -8,6 +8,8 @@ pub async fn start(take: String) -> Result<(), JsValue> {
     let key = format!("busquets-{take}");
     match take.as_str() {
         "pivot" => kit::web::run::<pivot::Pivot>("take", &key).await,
+        "pulse" => kit::web::run::<pulse::Pulse>("take", &key).await,
+        "garden" => kit::web::run::<garden::Garden>("take", &key).await,
         _ => Err(JsValue::from_str("no such take")),
     }
 }

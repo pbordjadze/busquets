@@ -51,6 +51,7 @@ pub enum Touch {
 
 /// One pointer event (points; `phase` 0 down, 1 move, 2 up, 3 cancel) applied to the world. `ppp`
 /// turns points into the view's pixels.
+#[allow(clippy::too_many_arguments)]
 pub fn drive(world: &mut World, g: &mut Gestures, view: &View, ppp: f32, id: u64, phase: u32, x: f32, y: f32, t: f64) -> Touch {
     let px = |p: [f32; 2]| [p[0] * ppp, p[1] * ppp];
     let gesture = match phase {

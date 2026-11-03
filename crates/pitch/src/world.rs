@@ -112,7 +112,7 @@ pub enum Ball {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Event {
     /// A pass: who to whom, how open its lane was (truly), its direction (radians) and length.
-    Pass { from: usize, to: usize, open: f32, angle: f32, length: f32, first_time: bool, yours: bool },
+    Pass { from: usize, to: usize, at: V2, open: f32, angle: f32, length: f32, first_time: bool, yours: bool },
     Received { by: usize, first_time: bool },
     Poked { by: usize, at: V2 },
     Recovered { by: usize },
@@ -355,7 +355,7 @@ impl World {
         if from == YOU {
             self.your_touches += 1;
         }
-        self.events.push(Event::Pass { from, to, open: open.open, angle: (b - a).angle(), length: a.dist(b), first_time, yours: from == YOU });
+        self.events.push(Event::Pass { from, to, at: a, open: open.open, angle: (b - a).angle(), length: a.dist(b), first_time, yours: from == YOU });
     }
 
     fn face_ball(&mut self, k: f32) {

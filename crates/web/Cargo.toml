@@ -12,6 +12,8 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 kit = { workspace = true }
 pivot = { path = "../../takes/pivot" }
+pulse = { path = "../../takes/pulse" }
+garden = { path = "../../takes/garden" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "=0.2.130"

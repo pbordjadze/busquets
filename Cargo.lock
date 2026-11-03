@@ -84,8 +84,10 @@ checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 name = "busquets-web"
 version = "0.1.0"
 dependencies = [
+ "garden",
  "kit",
  "pivot",
+ "pulse",
  "wasm-bindgen",
  "wasm-bindgen-futures",
 ]
@@ -281,6 +283,18 @@ dependencies = [
  "futures-task",
  "pin-project-lite",
  "slab",
+]
+
+[[package]]
+name = "garden"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "kit",
+ "pitch",
+ "serde",
+ "serde_json",
+ "wgpu",
 ]
 
 [[package]]
@@ -671,6 +685,16 @@ name = "profiling"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d595e54a326bc53c1c197b32d295e14b169e3cfeaa8dc82b529f947fba6bcf5"
+
+[[package]]
+name = "pulse"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "kit",
+ "pitch",
+ "wgpu",
+]
 
 [[package]]
 name = "pxfm"

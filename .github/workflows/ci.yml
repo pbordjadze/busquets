@@ -1,0 +1,141 @@
+name: CI
+
+# The engine and the takes (README.md).
+#   check   Linux: built, tested, every plan in takes/<take>/plans played headless on Mesa's software
+#           Vulkan; the shots, films (MP4 and contact sheet) and sound are the `<take>-check` artifact.
+#   web     the WebGPU build (tools/web-build.sh) as the `web` artifact, a directory any static server serves.
+#   ipa     macOS, one job for every take in turn (the five macOS runners are shared with every app: one
+#           IPA run a round, and look at the queue first). Only when asked: a push whose first line
+#           carries `[ipa]`, or a run started by hand with `ipa`. On main each take is released as
+#           `<take>-build-<n>` (the five newest kept); elsewhere the IPAs are the `ipa` artifact.
+#   publish on main after a release: the SideStore source regenerated on the `sidestore` branch
+#           (ci/sidestore_publish.sh); add https://raw.githubusercontent.com/pbordjadze/busquets/sidestore/source.json
+
+on:
+  push:
+    branches-ignore: ['sidestore']
+  workflow_dispatch:
+    inputs:
+      ipa:
+        description: Build the IPAs too (macOS runner)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
+
+jobs:
+  check:
+    name: Check ${{ matrix.take }} on Linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        take: [pivot, pulse, garden]
+    steps:
+      - uses: actions/checkout@v5
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with: { key: '${{ matrix.take }}' }
+      - name: Software Vulkan and ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq mesa-vulkan-drivers ffmpeg > /dev/null
+      - name: Build and test
+        run: |
+          cargo build --release -p ${{ matrix.take }} --bin ${{ matrix.take }}-check
+          cargo test --release -p pitch -p kit -p ${{ matrix.take }}
+          cargo clippy --release -p pitch -p ${{ matrix.take }} -- -D warnings || echo "::warning::clippy has findings"
+      - name: Play every plan
+        run: |
+          mkdir -p build/out
+          for p in takes/${{ matrix.take }}/plans/*.json; do
+            n=$(basename "$p" .json)
+            cargo run -q --release -p ${{ matrix.take }} --bin ${{ matrix.take }}-check -- play "$p" "build/out/$n" | tee "build/out/$n.log"
+            if [ -d "build/out/$n/film" ]; then bash tools/film.sh "build/out/$n" && rm -rf "build/out/$n/film"; fi
+          done
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with: { name: '${{ matrix.take }}-check', path: build/out, if-no-files-found: error }
+
+  web:
+    name: Web build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: wasm32-unknown-unknown }
+      - uses: Swatinem/rust-cache@v2
+        with: { key: web }
+      - name: Build
+        run: |
+          cargo install wasm-bindgen-cli --version 0.2.130 --locked
+          bash tools/web-build.sh build/web
+      - uses: actions/upload-artifact@v5
+        with: { name: web, path: build/web, if-no-files-found: error }
+
+  ipa:
+    needs: [check]
+    if: ${{ (github.event_name == 'workflow_dispatch' && inputs.ipa) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[ipa]')) }}
+    name: IPAs (unsigned device builds)
+    permissions:
+      contents: write
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      BUILD: ${{ github.run_number }}
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: aarch64-apple-ios }
+      - uses: Swatinem/rust-cache@v2
+        with: { key: ios }
+      - name: Build the IPAs
+        run: |
+          mkdir -p out
+          for take in pivot pulse garden; do
+            BUILD="$BUILD" bash ios/build.sh $take out 2>&1 | tee out/$take-build.log | tail -20
+            ls -l out/$take.ipa
+          done
+      - name: Release
+        if: github.ref_name == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git log -1 --format=%s > out/notes.txt
+          for take in pivot pulse garden; do
+            TAG="$take-build-$BUILD"
+            NAME="$(python3 -c "import json; print(json.load(open('takes/$take/toy.json'))['name'])")"
+            if gh release view "$TAG" > /dev/null 2>&1; then
+              gh release upload "$TAG" "out/$take.ipa" --clobber
+            else
+              gh release create "$TAG" "out/$take.ipa" --prerelease --target "$GITHUB_SHA" --title "$NAME build $BUILD" --notes-file out/notes.txt
+            fi
+            gh release list --limit 200 --json tagName -q '.[].tagName' | grep "^$take-build-[0-9]*$" | sort -t- -k3 -n -r | tail -n +6 |
+              while read -r tag; do gh release delete "$tag" --yes --cleanup-tag; done
+          done
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with: { name: ipa, path: out, if-no-files-found: error }
+
+  publish:
+    needs: [ipa]
+    if: ${{ !cancelled() && github.ref_name == 'main' && needs.ipa.result == 'success' }}
+    name: SideStore source
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency: { group: sidestore-source, cancel-in-progress: false }
+    steps:
+      - uses: actions/checkout@v5
+      - name: Regenerate and push the source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash ci/sidestore_publish.sh build/source "SideStore source after build ${{ github.run_number }}"

@@ -1,4 +1,4 @@
-// The C ABI every toy's static library exports (toy-kit's `ios_shell!`, toys/crates/toy-kit/src/lib.rs).
+// The C ABI every take's static library exports (kit's `ios_shell!`, crates/kit/src/lib.rs; from terra-incognita's toy-kit).
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>

@@ -1,4 +1,4 @@
-// Every toy's device shell (toys/README.md): a UIKit app whose one view is a CAMetalLayer the toy's
+// Every take's device shell (from terra-incognita's toys/ios, NOTICE.md): a UIKit app whose one view is a CAMetalLayer the take's
 // Rust library draws on (toy-kit's C ABI, toy.h). Touches go in as pointer events in points; a
 // display link asks for a frame at the screen's rate; the toy's sound, if it has one, is pulled by an
 // AVAudioEngine source node on the audio thread. Nothing else lives here: the library is the toy.
