@@ -130,10 +130,12 @@ enum State {
     Failed(String),
 }
 
-/// The changes WHAT IF offers, in turn.
-const TWEAKS: [(&str, Tweak); 2] = [
-    ("SPAIN'S LINE +10 M", Tweak { line: [10.0, 0.0], press: [1.0, 1.0] }),
-    ("CROATIA PRESS HIGH", Tweak { line: [0.0, 8.0], press: [1.0, 1.6] }),
+/// The changes WHAT IF offers, in turn: a change to the sides, and whether Busquets plays as himself
+/// (his measured traits, crates/real/examples/busquets.rs) or as a generic central midfielder.
+const TWEAKS: [(&str, Tweak, bool); 3] = [
+    ("SPAIN'S LINE +10 M", Tweak { line: [10.0, 0.0], press: [1.0, 1.0] }, true),
+    ("CROATIA PRESS HIGH", Tweak { line: [0.0, 8.0], press: [1.0, 1.6] }, true),
+    ("A GENERIC 5 FOR BUSQUETS", Tweak { line: [0.0, 0.0], press: [1.0, 1.0] }, false),
 ];
 
 struct Finger {
@@ -158,11 +160,6 @@ pub struct Ghost {
     what_if: usize,
     sim: Option<Sim>,
     clock: f32,
-    traits_for: fn(&Game, usize) -> Traits,
-}
-
-fn generic(_: &Game, _: usize) -> Traits {
-    Traits::default()
 }
 
 /// The camera through someone's eyes.
@@ -266,10 +263,11 @@ impl Ghost {
 
     fn start_sim(&mut self) {
         let State::Ready(l) = &self.state else { return };
-        let tw = TWEAKS[(self.what_if - 1) % TWEAKS.len()].1;
-        let tf = self.traits_for;
+        let (_, tw, himself) = TWEAKS[(self.what_if - 1) % TWEAKS.len()];
         let g = &l.game;
-        self.sim = Some(Sim::from_moment(g, &l.tracks, self.t, tw, &|p| tf(g, p), 11));
+        let b = l.busquets;
+        let traits = |p: usize| if Some(p) == b && himself { Traits::busquets() } else { Traits::default() };
+        self.sim = Some(Sim::from_moment(g, &l.tracks, self.t, tw, &traits, 11));
     }
 
     /// Where a person stands now: in your version when one is playing, else the real one.
@@ -342,7 +340,6 @@ impl Toy for Ghost {
             what_if: 0,
             sim: None,
             clock: 0.0,
-            traits_for: generic,
         })
     }
 

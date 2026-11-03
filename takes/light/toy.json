@@ -1,0 +1,5 @@
+{
+  "_": "The take's app (ios/build.sh): its display name (a working title; the name is Paul's) and bundle id. Its SideStore entry is in ci/sidestore_apps.json.",
+  "name": "Light",
+  "bundleIdentifier": "com.pbordjadze.busquets.light"
+}

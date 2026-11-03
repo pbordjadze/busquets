@@ -3,7 +3,7 @@
 # NOTICE.md); pitch is the football: players, ball, your-pace time, scanning, passing lanes.
 [workspace]
 resolver = "2"
-members = ["crates/kit", "crates/pitch", "crates/real", "takes/ghost", "crates/web", "takes/pivot", "takes/pulse", "takes/garden"]
+members = ["crates/kit", "crates/pitch", "crates/real", "takes/ghost", "takes/light", "crates/web", "takes/pivot", "takes/pulse", "takes/garden"]
 
 [workspace.package]
 version = "0.1.0"

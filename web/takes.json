@@ -2,5 +2,6 @@
   {"id": "pivot", "title": "Pivot", "bg": "#0b1f12"},
   {"id": "pulse", "title": "Pulse", "bg": "#05060d"},
   {"id": "garden", "title": "Rondo Garden", "bg": "#e9e3d4"},
-  {"id": "ghost", "title": "Ghost", "bg": "#05070a"}
+  {"id": "ghost", "title": "Ghost", "bg": "#05070a"},
+  {"id": "light", "title": "Light", "bg": "#030409"}
 ]

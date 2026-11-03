@@ -7,31 +7,36 @@
 //! best answers what they value (an open lane, ground gained, a length they like, how much risk they
 //! take), carries into space, or shoots when near enough. A pass meets the real opponents: the lane
 //! model (pitch::lane) that decides whether it is open decides whether it is cut out.
+use crate::choice::{self, Weights};
 use crate::track::{clamp_pitch, shape_at};
 use pitch::lane::{openness, LaneParams};
 use pitch::v2::Rng;
 use pitch::{v2, V2};
 
-/// What a player values on the ball; the defaults are a generic player.
+/// How a player plays on the ball: who they pass to (a choice model's weights, choice.rs) and their
+/// tempo. `Traits::default()` is a generic central midfielder; `Traits::busquets()` is him.
 #[derive(Clone, Copy, Debug)]
 pub struct Traits {
-    /// Seconds on the ball before releasing (mean); one-touch share.
+    pub w: Weights,
+    /// Median seconds from receiving to releasing; the share released at once.
     pub hold: f32,
     pub one_touch: f32,
-    /// Weights: an open lane, ground gained (m), and the length they like (m) with its spread.
-    pub w_open: f32,
-    pub w_gain: f32,
-    pub pref_len: f32,
-    pub len_spread: f32,
-    /// How much they want the lane open before they will play it (0..1).
-    pub caution: f32,
-    /// The choice's randomness.
-    pub temp: f32,
 }
+
+/// Fit by `cargo run --release -p real --example busquets` on La Liga 2020/21 (StatsBomb open data, 360
+/// frames): Busquets' 1564 passes, and 5285 by the other central midfielders in those matches.
+pub const BUSQUETS_W: Weights = [0.92, 0.54, -1.47, -0.12, 0.30, 0.66, -0.42, -0.40];
+pub const CM_W: Weights = [1.25, 0.46, -1.22, -0.16, 0.29, 0.67, -0.27, -0.27];
 
 impl Default for Traits {
     fn default() -> Traits {
-        Traits { hold: 1.6, one_touch: 0.12, w_open: 2.0, w_gain: 0.06, pref_len: 18.0, len_spread: 14.0, caution: 0.35, temp: 0.35 }
+        Traits { w: CM_W, hold: 1.04, one_touch: 0.36 }
+    }
+}
+
+impl Traits {
+    pub fn busquets() -> Traits {
+        Traits { w: BUSQUETS_W, hold: 0.81, one_touch: 0.46 }
     }
 }
 
@@ -136,27 +141,23 @@ impl Sim {
         let h = &self.agents[by];
         let opp = self.opponents(h.side);
         let sg = if h.side == 0 { 1.0 } else { -1.0 };
-        let tr = h.traits;
-        let lp = lane_params();
+        let opp: Vec<V2> = opp.into_iter().flatten().collect();
         self.agents
             .iter()
             .enumerate()
-            .filter(|(i, a)| *i != by && a.side == h.side)
-            .map(|(i, a)| {
-                let o = openness(h.pos, a.pos, &opp, &lp).open;
-                let len = h.pos.dist(a.pos);
-                let gain = (a.pos.x - h.pos.x) * sg;
-                let s = tr.w_open * (o - tr.caution) + tr.w_gain * gain - ((len - tr.pref_len) / tr.len_spread).powi(2) * 0.5;
-                (i, s)
-            })
+            .filter(|(i, a)| *i != by && a.side == h.side && a.position != 1)
+            .map(|(i, a)| (i, choice::score(&h.traits.w, &choice::features(h.pos, a.pos, &opp, sg))))
             .collect()
     }
 
     pub fn step(&mut self, dt: f32) {
         self.t += dt;
         let poss = self.poss_side();
-        // where the ball will be
-        let ball_now = self.ball_pos;
+        // where the ball is, or (in flight) where it is going: defenders run at the receiver, not the ball
+        let ball_now = match self.ball {
+            SimBall::Flight { b, .. } => b,
+            _ => self.ball_pos,
+        };
         // off the ball
         let n = self.agents.len();
         let opp_pos: [Vec<Option<V2>>; 2] = [self.opponents(0), self.opponents(1)];
@@ -236,7 +237,7 @@ impl Sim {
                 let pressure = self.agents.iter().filter(|a| a.side != h.side && a.pos.dist(h.pos) < 2.0).count();
                 if pressure > 0 && t > 0.3 {
                     // a tackle: the nearest presser takes it, sometimes
-                    if self.rng.f() < dt * 0.6 * pressure as f32 {
+                    if self.rng.f() < dt * 0.3 * pressure as f32 {
                         let tk = (0..n).filter(|&j| self.agents[j].side != h.side).min_by(|&a, &b| self.agents[a].pos.dist(h.pos).partial_cmp(&self.agents[b].pos.dist(h.pos)).unwrap()).unwrap();
                         self.events.push(SimEvent::Cut { by: tk, at: h.pos });
                         self.ball = SimBall::Held { by: tk, t: 0.0, hold: self.draw_hold(tk) };
@@ -258,7 +259,7 @@ impl Sim {
                     let side = self.agents[from].side;
                     for j in 0..n {
                         let q = &self.agents[j];
-                        if q.side != side && q.pos.dist(self.ball_pos) < 1.3 && u > 0.08 {
+                        if q.side != side && q.pos.dist(self.ball_pos) < 0.9 && u > 0.1 {
                             self.events.push(SimEvent::Cut { by: j, at: self.ball_pos });
                             self.ball = SimBall::Held { by: j, t: 0.0, hold: self.draw_hold(j) };
                             return;
@@ -301,10 +302,11 @@ impl Sim {
 
     fn draw_hold(&mut self, by: usize) -> f32 {
         let tr = self.agents[by].traits;
+        // a quick share released at once (0.3..0.7 s), the rest spread around twice the median
         if self.rng.f() < tr.one_touch {
-            0.15
+            0.3 + 0.4 * self.rng.f()
         } else {
-            (tr.hold * (0.5 + self.rng.f())).max(0.3)
+            (tr.hold * (1.0 + 1.6 * self.rng.f())).max(0.5)
         }
     }
 
@@ -322,7 +324,7 @@ impl Sim {
         if opts.is_empty() {
             return;
         }
-        let temp = h.traits.temp.max(0.05);
+        let temp = 1.0;
         let m = opts.iter().map(|o| o.1).fold(f32::MIN, f32::max);
         let ws: Vec<f32> = opts.iter().map(|o| ((o.1 - m) / temp).exp()).collect();
         let sum: f32 = ws.iter().sum();
