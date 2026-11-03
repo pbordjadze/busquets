@@ -1,13 +1,24 @@
-//! Visual directions (placeholder until the study lands): four looks, `Night`, `Paper`, `Lines`, `Wash`.
-use kit::{Ctx, PointerEvent, Toy};
-pub struct Blank;
-impl Toy for Blank {
-    fn new(_c: &mut Ctx) -> anyhow::Result<Self> { Ok(Blank) }
-    fn pointer(&mut self, _c: &mut Ctx, _e: PointerEvent) {}
-    fn update(&mut self, _c: &mut Ctx, _t: f64, _d: f64) {}
-    fn draw(&mut self, _c: &mut Ctx, _v: &wgpu::TextureView) {}
-}
-pub type Night = Blank;
-pub type Paper = Blank;
-pub type Lines = Blank;
-pub type Wash = Blank;
+//! Visual directions: four looks for the same engine, each the rondo playing itself (nobody human),
+//! for a blind first round. Same world, same camera (`common`); only the painting differs.
+//!
+//! - `Night`: a night tactical cam. Players are lights; each presser casts a cone of attention that
+//!   bends from the ball toward its guess (`lean`), narrowing and brightening as it commits.
+//! - `Paper`: layered card under a low sun. The pitch is cut paper in strata; the players are
+//!   paper-cut figures with long shadows; the pass a paper ribbon.
+//! - `Lines`: the pitch drawn in living chalk-light; every pass leaves a line that shimmers, cools
+//!   from gold to blue as it ages and thickens each time the same route is used again.
+//! - `Wash`: pressure as weather in watercolour. Pressers bleed indigo-to-crimson blooms that spread
+//!   and dry where they press (wet edges, granulation); passes are single strokes of sumi ink.
+//!
+//! A touch only turns the ball carrier's head (`World::glance`), so the pressers may read it.
+
+mod common;
+mod lines;
+mod night;
+mod paper;
+mod wash;
+
+pub use lines::Lines;
+pub use night::Night;
+pub use paper::Paper;
+pub use wash::Wash;
