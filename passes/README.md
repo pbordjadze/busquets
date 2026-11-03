@@ -3,7 +3,7 @@
 Every pass Sergio Busquets played in StatsBomb's open data (La Liga 2008/09 to 2020/21, the 2018 and 2022
 World Cups, Euro 2020, the Champions League finals in the set, Inter Miami 2023: 407 matches, 28,754
 passes), drawn as light on a dark pitch in the order he played them. One match at first, a pass at a time,
-then the seasons gather in seconds; the whole of it holds for a while, old passes flying again, and it
+then the seasons gather in seconds; the whole of it holds for half a minute, old passes flying again one at a time, and it
 begins again.
 
 Each pass is a ball of light on a curling arc that leaves its trace: warm going forward, cool going back,

@@ -4,7 +4,7 @@
   html, body { height: 100%; margin: 0; background: var(--night); overflow: hidden; }
   canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
   #sb { position: fixed; right: calc(14px + env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-        width: 76px; opacity: .42; pointer-events: none; user-select: none; }
+        width: 60px; opacity: .36; pointer-events: none; user-select: none; }
 </style>
 <canvas id="c"></canvas>
 <img id="sb" src="__LOGO__" alt="Data: StatsBomb">
@@ -26,7 +26,8 @@ const DIR = new Float32Array(N), LEN = new Float32Array(N);
     const x0 = raw[k] / 2, y0 = raw[k + 1] / 3, x1 = raw[k + 2] / 2, y1 = raw[k + 3] / 3;
     const t = raw[k + 4] | (raw[k + 5] << 8), f = raw[k + 6];
     if (f & 2) { base = i ? MT[i - 1] + 1500 : 0; first = t; }   // a breath between matches
-    P.set([x0, y0, x1, y1], i * 4);
+    const j = n => (Math.sin(i * 12.9898 + n * 78.233) * 43758.5453 % 1) * 0.8;   // ±0.4 m: the data's grid would stack into stripes
+    P.set([x0 + j(1), y0 + j(2), x1 + j(3), y1 + j(4)], i * 4);
     MT[i] = base + (t - first);
     BAD[i] = f & 1;
     const dx = x1 - x0, dy = y1 - y0, l = Math.hypot(dx, dy) || 0.01;
@@ -97,7 +98,7 @@ void main(){
   gl_Position = vec4(cl.x, -cl.y, 0, 1);
   v_uv = vec2(s, side);
   float k = a_m.z;
-  vec3 lat = vec3(1., .80, .55), warm = vec3(1., .50, .20), cool = vec3(.42, .62, 1.);
+  vec3 lat = vec3(1., .86, .68), warm = vec3(1., .62, .32), cool = vec3(.42, .62, 1.);
   v_col = k > 2.5 ? vec3(.80, .20, .36) * .5 : (k >= 0. ? mix(lat, warm, k) : mix(lat, cool, -k));
   v_i = a_m.w;
 }`;
@@ -108,7 +109,7 @@ uniform float u_taper;
 out vec4 o;
 void main(){
   float across = exp(-v_uv.y * v_uv.y * 3.2);
-  float along = mix(1., pow(v_uv.x, 2.4) + .9 * pow(v_uv.x, 40.), u_taper);
+  float along = mix(pow(sin(3.14159 * v_uv.x), .7), pow(v_uv.x, 2.4) + .9 * pow(v_uv.x, 40.), u_taper);   // strands taper at both ends
   o = vec4(v_col * v_i * across * along, 1.);
 }`;
 const FULL_VS = `#version 300 es
@@ -117,7 +118,7 @@ const FADE_FS = `#version 300 es
 precision mediump float; out vec4 o; void main(){ o = vec4(0); }`;
 const COMBINE_FS = `#version 300 es
 precision highp float; in vec2 v; uniform sampler2D u_a, u_b; uniform float u_ea, u_eb; out vec4 o;
-void main(){ o = vec4(texture(u_a, v).rgb * u_ea + texture(u_b, v).rgb * u_eb, 1.); }`;
+void main(){ o = vec4(texture(u_b, v).rgb * u_eb, 1.); }`;
 const DOWN_FS = `#version 300 es
 precision highp float; in vec2 v; uniform sampler2D u_t; uniform vec2 u_px; out vec4 o;
 void main(){ vec2 h = u_px * .5;
@@ -131,15 +132,19 @@ void main(){
   o = s; }`;
 const FINAL_FS = `#version 300 es
 precision highp float; in vec2 v;
-uniform sampler2D u_s, u_b1, u_b2; uniform vec2 u_res; uniform vec3 u_ix; uniform vec3 u_iy;
+uniform sampler2D u_s, u_b1, u_b2, u_p; uniform float u_ep; uniform vec2 u_res; uniform vec3 u_ix; uniform vec3 u_iy;
 uniform float u_fade, u_pitch, u_time, u_exp;
 out vec4 o;
 float box(vec2 p, vec2 a, vec2 b){ vec2 c=(a+b)*.5, h=(b-a)*.5; vec2 q=abs(p-c)-h; return abs(length(max(q,0.))+min(max(q.x,q.y),0.)); }
 float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
 void main(){
   vec2 fc = vec2(gl_FragCoord.x, u_res.y - gl_FragCoord.y);
-  vec3 hd = texture(u_s, v).rgb + texture(u_b1, v).rgb * .55 + texture(u_b2, v).rgb * .5;
-  vec3 c = 1. - exp(-hd * u_exp);
+  vec3 pd = texture(u_p, v).rgb * u_ep;
+  pd = pd * pd / (pd + .35) * 1.35;                 // sparse strands sink toward black, the dense heart keeps its shape
+  vec3 hd = pd + texture(u_s, v).rgb + texture(u_b1, v).rgb * .38 + texture(u_b2, v).rgb * .22;
+  float hl = max(dot(hd, vec3(.3,.5,.2)), 1e-5);
+  vec3 c = hd * ((1. - exp(-hl * u_exp * 1.25)) * .86 / hl);   // tone-map the brightness, keep the hue
+  c = c / max(1., max(c.r, max(c.g, c.b)));
   // the pitch, barely there: chalk that the light catches
   vec2 w = vec2(dot(u_ix, vec3(fc,1.)), dot(u_iy, vec3(fc,1.)));
   float ppm = 1. / length(vec2(u_ix.x, u_iy.x));      // pixels per metre
@@ -155,12 +160,13 @@ void main(){
   d = min(d, min(length(w - vec2(60,40)), min(length(w - vec2(12,40)), length(w - vec2(108,40)))) - .18);
   float lw = max(.07, .6 / ppm);
   float line = 1. - smoothstep(lw, lw + 1.2 / ppm, d);
+  float cl = dot(c, vec3(.3,.5,.2)); c = max(mix(vec3(cl), c, 1.45), 0.);   // keep warm and cool apart
   vec2 q = v - .5; c *= 1. - dot(q, q) * .55;
   c = pow(max(c, 0.), vec3(1. / 2.2));
   float lum = dot(c, vec3(.3,.5,.2));
   float inside = 1. - smoothstep(0., 3., max(max(-w.x, w.x - 120.), max(-w.y, w.y - 80.)));
   c += vec3(.012,.020,.022) * inside * u_pitch;                       // the ground, a shade off the night
-  c += vec3(.55,.66,.70) * line * u_pitch * (.07 + lum * .08);         // chalk the light catches
+  c += vec3(.55,.66,.70) * line * u_pitch * (.085 + lum * .06);         // chalk the light catches
   c *= u_fade;
   c += (hash(fc + fract(u_time) * 97.) - .5) / 255. * 1.6;
   o = vec4(c + vec3(.006,.009,.012), 1.);
@@ -192,7 +198,7 @@ function layout() {
   const portrait = H > W * 1.05;
   const mw = portrait ? 80 : 120, mh = portrait ? 120 : 80;          // pitch extent on screen, metres
   const pad = 0.92;
-  ppm = Math.min(W / (mw + 6), H / (mh + 6)) * (portrait ? 1 : pad + (1 - pad) * 0.5);
+  ppm = Math.min(W / (mw + (portrait ? 3 : 6)), H / (mh + 4)) * (portrait ? 1 : pad + (1 - pad) * 0.5);
   const ox = W / 2, oy = H / 2;
   if (portrait) {   // attacking up the screen, his left on the left
     mx = [0, ppm, ox - 40 * ppm]; my = [-ppm, 0, oy + 60 * ppm];
@@ -203,7 +209,7 @@ function layout() {
   }
   [perm, recent, scene, b1, b1t, b2, b2t].forEach(drop);
   perm = target(W, H); scene = target(W, H);
-  recent = target(W >> 1, H >> 1);
+  recent = target(W, H);
   b1 = target(W >> 2, H >> 2); b1t = target(W >> 2, H >> 2);
   b2 = target(W >> 4, H >> 4); b2t = target(W >> 4, H >> 4);
   if (landed > 0) traces(0, landed, perm, permI, 1);   // the light so far, redrawn at the new size
@@ -216,7 +222,7 @@ function lines(fb, items, count, width, taper, set) {
   const s = fb.w / W;
   gl.uniform2f(L.u.u_res, fb.w, fb.h);
   gl.uniform3f(L.u.u_mx, mx[0] * s, mx[1] * s, mx[2] * s); gl.uniform3f(L.u.u_my, my[0] * s, my[1] * s, my[2] * s);
-  gl.uniform1f(L.u.u_w, width * s); gl.uniform1f(L.u.u_taper, taper); gl.uniform1f(L.u.u_bend, 0.13);
+  gl.uniform1f(L.u.u_w, width * s); gl.uniform1f(L.u.u_taper, taper); gl.uniform1f(L.u.u_bend, 0.065);
   gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE);
   gl.bindVertexArray(lineVAO); gl.bindBuffer(gl.ARRAY_BUFFER, instBuf);
   for (let a = 0; a < count; a += 4096) {
@@ -246,10 +252,10 @@ function blur(src, tmp) {
 function down(src, dst) { full(dst, D); tex(0, src, D.u.u_t); gl.uniform2f(D.u.u_px, 1 / src.w, 1 / src.h); gl.drawArrays(gl.TRIANGLES, 0, 3); }
 
 // ---------------------------------------------------------------- the film
-const INTRO = 3.0, HOLD = 48, OUT = 7;
+const INTRO = 3.0, HOLD = 28, OUT = 7;
 let clock = -INTRO, launched = 0, landed = 0, flying = [], afterglow = [], nextEcho = 0;
 
-function exposure(n) { return 0.9 / Math.pow(1 + n / 150, 0.85); }   // the eye adjusting as the light gathers
+function exposure(n) { return 1.4 / (1 + n / 420); }   // once it is dense the busiest place stays lit, not burnt   // the eye adjusting as the light gathers
 
 function frame(dt) {
   clock += dt;
@@ -267,18 +273,18 @@ function frame(dt) {
   // arrivals
   const arrived = [];
   flying = flying.filter(i => { if (t >= TP[i] + DUR[i]) { arrived.push(i); return false; } return true; });
-  const recentI = 2.2 / Math.sqrt(1 + pps * 2.6 / 3);
+  const recentI = 2.2 / (1 + pps / 3);   // the last few seconds glow; never a fog
   if (arrived.length) {
     arrived.sort((a, b) => a - b);
     lines(perm, j => arrived[j], arrived.length, traceW(), 0, traceSet(() => 1));
-    lines(recent, j => arrived[j], arrived.length, traceW() * 1.6, 0, traceSet(() => recentI));
+    lines(recent, j => arrived[j], arrived.length, traceW() * 1.25, 0, traceSet(() => recentI));
     landed += arrived.length;
   }
 
   // after the last pass: the whole of it, with old passes flying again now and then
   if (t > BUILD && landed >= N && t < BUILD + HOLD) {
     nextEcho -= dt;
-    while (nextEcho <= 0) { const i = (Math.random() * N) | 0; afterglow.push({ i, t0: t, d: 0.6 + LEN[i] / 30 }); nextEcho += 0.35 + Math.random() * 0.9; }
+    while (nextEcho <= 0) { const i = (Math.random() * N) | 0; afterglow.push({ i, t0: t, d: 1.4 + LEN[i] / 22 }); nextEcho += 0.5 + Math.random() * 0.6; }
   }
 
   // scene = permanent light + recent glow, then the balls in flight
@@ -287,9 +293,10 @@ function frame(dt) {
   gl.drawArrays(gl.TRIANGLES, 0, 3);
 
   const comets = [];
-  const tail = 0.42, cI = 3.2 / Math.sqrt(1 + pps / 6);
-  for (const i of flying) comets.push([i, (t - TP[i]) / DUR[i], cI]);
-  afterglow = afterglow.filter(e => { const p = (t - e.t0) / e.d; if (p > 1 + tail) { echoLand(e.i); return false; } comets.push([e.i, p, 2.4]); return true; });
+  const tail = 0.42, cI = Math.max(1.6, 3.2 / Math.sqrt(1 + pps / 6));
+  const every = Math.max(1, Math.round(pps * 0.5 / 40));   // fast: only some balls are seen flying, the rest just land
+  for (const i of flying) if (i % every === 0) comets.push([i, (t - TP[i]) / DUR[i], cI]);
+  afterglow = afterglow.filter(e => { const p = (t - e.t0) / e.d; if (p > 1 + tail) { echoLand(e.i); return false; } comets.push([e.i, p, 4.0]); return true; });
   if (comets.length) {
     lines(scene, j => comets[j], comets.length, Math.max(2.2, ppm * 0.34), 1, (c, o, k) => {
       const [i, p, ci] = c;
@@ -307,7 +314,7 @@ function frame(dt) {
   if (t > BUILD + HOLD) fade = Math.max(0, 1 - (t - BUILD - HOLD) / OUT);
   const pitch = Math.min(1, Math.max(0, (t + INTRO) / INTRO));
   full(null, FN);
-  tex(0, scene, FN.u.u_s); tex(1, b1, FN.u.u_b1); tex(2, b2, FN.u.u_b2);
+  tex(0, scene, FN.u.u_s); tex(1, b1, FN.u.u_b1); tex(2, b2, FN.u.u_b2); tex(3, perm, FN.u.u_p); gl.uniform1f(FN.u.u_ep, ePerm);
   gl.uniform2f(FN.u.u_res, W, H); gl.uniform3f(FN.u.u_ix, ...ix); gl.uniform3f(FN.u.u_iy, ...iy);
   gl.uniform1f(FN.u.u_fade, fade * fade * (3 - 2 * fade)); gl.uniform1f(FN.u.u_pitch, pitch * pitch); gl.uniform1f(FN.u.u_time, t);
   gl.uniform1f(FN.u.u_exp, 1.0);
@@ -319,7 +326,7 @@ function traceSet(inten) {
     o[k + 4] = 0; o[k + 5] = 1; o[k + 6] = BAD[i] ? 3 : DIR[i]; o[k + 7] = inten(i) * (BAD[i] ? 0.45 : 1);
   };
 }
-function echoLand(i) { lines(recent, () => i, 1, traceW() * 1.6, 0, traceSet(() => 1.4)); }
+function echoLand(i) { lines(recent, () => i, 1, traceW() * 1.25, 0, traceSet(() => 2.6)); }
 
 function restart() {
   clock = -INTRO; launched = 0; landed = 0; flying = []; afterglow = []; nextEcho = 0;
@@ -335,8 +342,8 @@ window.__seek = t => {
   const tail0 = Math.max(0, t - 6);
   let a = 0; while (a < launched && TP[a] + DUR[a] < tail0) a++;
   const now = t;
-  lines(recent, j => a + j, launched - a, traceW() * 1.6, 0, traceSet(i => {
-    const pps = speed(TP[i]) / MEAN_GAP; return 2.2 / Math.sqrt(1 + pps * 2.6 / 3) * Math.exp(-(now - TP[i] - DUR[i]) / 2.6);
+  lines(recent, j => a + j, launched - a, traceW() * 1.25, 0, traceSet(i => {
+    const pps = speed(TP[i]) / MEAN_GAP; return 2.2 / (1 + pps / 3) * Math.exp(-(now - TP[i] - DUR[i]) / 2.6);
   }));
   while (launched < N && TP[launched] <= t) flying.push(launched++);
 };
