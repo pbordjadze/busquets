@@ -110,7 +110,7 @@ impl Toy for Wash {
                 continue;
             }
             let dry = (age / 12.0).clamp(0.0, 1.0);
-            let ink = [0.08 + 0.3 * dry, 0.08 + 0.3 * dry, 0.1 + 0.3 * dry, 0.85 * (1.0 - dry)];
+            let ink = [0.08 + 0.85 * dry, 0.08 + 0.83 * dry, 0.1 + 0.78 * dry, 1.0];
             let len = ps.a.dist(ps.b);
             let n = ((len / 0.35) as usize).clamp(1, 80);
             for j in 0..n {

@@ -96,9 +96,9 @@ struct Cam {
     cy: f32,
 }
 
-const BACK: f32 = 2.5;
+const BACK: f32 = 2.8;
 const SIDE: f32 = 1.0;
-const HEIGHT: f32 = 2.5;
+const HEIGHT: f32 = 2.7;
 const PITCH: f32 = 0.30;
 
 impl Cam {
@@ -106,7 +106,7 @@ impl Cam {
         let fw = V2::from_angle(angle);
         let rt = v2(fw.y, -fw.x);
         let e = you - fw * BACK + rt * SIDE;
-        Cam { eye: [e.x, e.y, HEIGHT], fw, rt, angle, pitch: PITCH, f: w * 0.5 / 0.62f32.tan(), cx: w * 0.5, cy: h * 0.5 }
+        Cam { eye: [e.x, e.y, HEIGHT], fw, rt, angle, pitch: PITCH, f: w * 0.5 / 0.5f32.tan(), cx: w * 0.5, cy: h * 0.56 }
     }
     /// Camera space: right, up, ahead (metres).
     fn space(&self, p: V2, z: f32) -> [f32; 3] {
@@ -210,18 +210,21 @@ fn mix3(a: [f32; 3], b: [f32; 3], k: f32) -> [f32; 3] {
     [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k]
 }
 
-/// A ring on the grass (an ellipse in perspective) drawn as light.
+/// A circle on the grass of radius `r` as the screen sees it: a flat stadium (ends, half-height).
+fn ground_ellipse(cam: &Cam, at: V2, r: f32) -> Option<([f32; 2], [f32; 2], f32)> {
+    let (l, rr, n, fa) = (cam.px(at - cam.rt * r, 0.0)?, cam.px(at + cam.rt * r, 0.0)?, cam.px(at - cam.fw * r, 0.0)?, cam.px(at + cam.fw * r, 0.0)?);
+    let hh = ((n[1] - fa[1]).abs() * 0.5).max(0.5);
+    let y = (n[1] + fa[1]) * 0.5;
+    let half = ((rr[0] - l[0]) * 0.5 - hh).max(0.0);
+    let cx = (l[0] + rr[0]) * 0.5;
+    Some(([cx - half, y], [cx + half, y], hh))
+}
+
+/// A ring of light on the grass.
 fn ground_ring(p: &mut Painter, cam: &Cam, at: V2, r: f32, width: f32, color: [f32; 4]) {
-    let n = 28;
-    let mut prev: Option<([f32; 2], f32)> = None;
-    for i in 0..=n {
-        let a = i as f32 / n as f32 * std::f32::consts::TAU;
-        let q = cam.project(at + V2::from_angle(a) * r, 0.02);
-        if let (Some((a0, z0)), Some((a1, _))) = (prev, q) {
-            let k = cam.f / z0;
-            p.glow(a0, a1, width * k, width * k * 2.0, color);
-        }
-        prev = q;
+    if let (Some((a, b, hh)), Some((_, z))) = (ground_ellipse(cam, at, r), cam.project(at, 0.0)) {
+        let w = width * cam.f / z;
+        p.shapes_add.push(Shape { a, b, r: hh, ring: w.max(1.0), soft: w * 0.8 + 1.0, _pad: 0.0, color: pm(color) });
     }
 }
 
@@ -400,17 +403,13 @@ impl Toy for Eyes {
         // on the grass: shadows, the pass in your hand, rings
         let light = v2(0.35, -0.25);
         let shadow = |p: &mut Painter, at: V2, r: f32, a: f32| {
-            let at = at + light;
-            if let (Some(l), Some(rr), Some(n), Some(fa)) = (cam.px(at - cam.rt * r, 0.0), cam.px(at + cam.rt * r, 0.0), cam.px(at - cam.fw * r, 0.0), cam.px(at + cam.fw * r, 0.0)) {
-                let thick = ((n[1] - fa[1]).abs() * 0.5).max(1.0);
-                let lx = [l[0] + thick * 0.5, (l[1] + rr[1]) * 0.5];
-                let rx = [rr[0] - thick * 0.5, (l[1] + rr[1]) * 0.5];
-                p.line(lx, rx, thick * 0.6, thick * 0.6, [0.0, 0.04, 0.02, a]);
+            if let Some((l, rr, hh)) = ground_ellipse(&cam, at + light, r) {
+                p.line(l, rr, hh * 0.8, hh * 0.4 + 1.0, [0.0, 0.04, 0.02, a]);
             }
         };
         for pl in &w.players {
             let (at, a) = if pl.kind == Kind::Presser { (pl.seen, (1.0 - pl.seen_age / 2.0).clamp(0.0, 1.0) * 0.45) } else { (pl.pos, 0.45) };
-            shadow(p, at, 0.42, a);
+            shadow(p, at, 0.34, a);
         }
         shadow(p, w.ball_pos, 0.13, 0.5);
         if let Some((dir, pace)) = w.aim {
@@ -423,19 +422,22 @@ impl Toy for Eyes {
                     let q = w.roll(from, dir * pace, o.t * i as f32 / 40.0).0;
                     let qq = cam.project(q, 0.03);
                     if let (Some((a, za)), Some((b, _))) = (prev, qq) {
-                        if i % 2 == 0 {
-                            let k = k_at(za);
-                            p.glow(a, b, 0.09 * k, 0.25 * k, [c[0], c[1], c[2], 0.7]);
-                        }
+                        let k = k_at(za);
+                        let fade = 1.0 - 0.5 * i as f32 / 40.0;
+                        p.glow(a, b, 0.05 * k, 0.12 * k + 1.0, [c[0], c[1], c[2], 0.6 * fade]);
+                        p.glow(a, b, 0.2 * k, 0.4 * k, [c[0], c[1], c[2], 0.08 * fade]);
                     }
                     prev = qq;
                 }
-                ground_ring(p, &cam, o.at, 0.8, 0.06, [c[0], c[1], c[2], 0.8]);
+                ground_ring(p, &cam, o.at, 0.7, 0.05, [c[0], c[1], c[2], 0.8]);
             }
         }
         for (at, t, g) in &self.graces {
             let k = 1.0 - t / 1.4;
-            ground_ring(p, &cam, *at, 0.7 + t * 1.6, 0.07, [1.0, 0.9, 0.6, 0.6 * k * g]);
+            ground_ring(p, &cam, *at, 0.6 + t * 1.8, 0.05, [1.0, 0.9, 0.65, 0.5 * k * g]);
+            if let Some((a, b, hh)) = ground_ellipse(&cam, *at, 1.2) {
+                p.glow(a, b, hh * 0.6, hh * 0.6, [1.0, 0.92, 0.7, 0.18 * k * g]);
+            }
         }
         for (at, t) in &self.bursts {
             ground_ring(p, &cam, *at, 0.4 + t * 3.0, 0.08, [1.0, 0.55, 0.45, 0.7 * (1.0 - t)]);
@@ -516,16 +518,22 @@ impl Toy for Eyes {
                     }
                     let sock = fogged([0.08, 0.08, 0.1]);
                     let soft = 0.03 * k + 0.8;
-                    let a = alpha;
+                    // a body right in front of the lens thins away rather than block the view
+                    let a = alpha * (0.25 + 0.75 * ((head.1 - 1.6) / 1.4).clamp(0.0, 1.0));
                     let o = |c: [f32; 3]| [c[0], c[1], c[2], a];
                     p.line(foot_l, hip, 0.075 * k, soft, o(sock));
                     p.line(foot_r, hip, 0.075 * k, soft, o(sock));
                     p.line(hip, hip, 0.2 * k, soft, o(fogged(shorts)));
-                    p.line(chest, sh, 0.24 * k, soft, o(fogged(shirt)));
+                    let (sl, sr) = ([sh[0] - 0.17 * k, sh[1] + 0.03 * k], [sh[0] + 0.17 * k, sh[1] + 0.03 * k]);
+                    let swing = (self.time * 7.0 + *i as f32).sin() * pl.vel.len().min(4.0) * 0.012 * k;
+                    p.line(sl, [sl[0] - 0.05 * k + swing, sl[1] + 0.55 * k], 0.055 * k, soft, o(fogged(skin)));
+                    p.line(sr, [sr[0] + 0.05 * k - swing, sr[1] + 0.55 * k], 0.055 * k, soft, o(fogged(skin)));
+                    p.line(chest, sh, 0.19 * k, soft, o(fogged(shirt)));
+                    p.line(sl, sr, 0.065 * k, soft, o(fogged(shirt)));
                     // light from the upper left: a lit flank
-                    let lit = [chest[0] - 0.07 * k, chest[1] - 0.02 * k];
-                    let lit2 = [sh[0] - 0.07 * k, sh[1]];
-                    p.line(lit, lit2, 0.12 * k, 0.12 * k, o(fogged(mix3(shirt, [1.0, 1.0, 1.0], 0.4))));
+                    let lit = [chest[0] - 0.06 * k, chest[1] - 0.02 * k];
+                    let lit2 = [sh[0] - 0.08 * k, sh[1]];
+                    p.line(lit, lit2, 0.08 * k, 0.1 * k, o(fogged(mix3(shirt, [1.0, 1.0, 1.0], 0.4))));
                     p.disc(head.0, 0.115 * k, soft, o(fogged(skin)));
                     p.disc([head.0[0] - 0.03 * k, head.0[1] - 0.04 * k], 0.07 * k, 0.06 * k, o(fogged(mix3(skin, [1.0, 0.9, 0.8], 0.3))));
                     if pl.kind == Kind::Presser && pl.stun > 0.0 {
