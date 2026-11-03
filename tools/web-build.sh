@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The web build: every take in one wasm (crates/web), its bindings, a page a take (web/take.html) and
-# the index (web/index.html), into one directory any static server serves (GitHub Pages does, from CI).
+# the index (web/index.html), into one directory any static server serves (CI keeps it as the `web` artifact).
 #
 #     bash tools/web-build.sh [out-dir]              # default build/web
 #     python3 -m http.server -d build/web 8000       # then http://localhost:8000/pivot/
