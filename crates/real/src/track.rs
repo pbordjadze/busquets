@@ -99,6 +99,9 @@ pub fn clamp_pitch(p: V2) -> V2 {
     v2(p.x.clamp(-52.0, 52.0), p.y.clamp(-33.5, 33.5))
 }
 
+/// Paths, their qualities and confidences, person by person.
+type Rendered = (Vec<Vec<V2>>, Vec<Vec<u8>>, Vec<Vec<u8>>);
+
 #[derive(Clone, Copy)]
 struct Key {
     t: f32,
@@ -145,15 +148,14 @@ impl Tracks {
         bk.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         let mut ball = vec![V2::ZERO; n];
         let mut ball_z = vec![0.0f32; n];
-        for i in 0..n {
-            let t = i as f32 * DT;
-            ball[i] = lerp_track(&bk, t);
+        for (i, b) in ball.iter_mut().enumerate() {
+            *b = lerp_track(&bk, i as f32 * DT);
         }
         for &(a, b, h) in &zk {
             let (i0, i1) = ((a / DT).ceil() as usize, ((b / DT) as usize).min(n - 1));
-            for i in i0..=i1 {
+            for (i, z) in ball_z.iter_mut().enumerate().take(i1 + 1).skip(i0) {
                 let u = ((i as f32 * DT - a) / (b - a).max(0.01)).clamp(0.0, 1.0);
-                ball_z[i] = ball_z[i].max(4.0 * h * u * (1.0 - u));
+                *z = z.max(4.0 * h * u * (1.0 - u));
             }
         }
         // the ball as the shape feels it (smoothed both ways, about 2 s)
@@ -169,12 +171,12 @@ impl Tracks {
         let mut poss = vec![0u8; n];
         {
             let mut j = 0;
-            for i in 0..n {
+            for (i, ps) in poss.iter_mut().enumerate() {
                 let t = i as f32 * DT;
                 while j + 1 < g.events.len() && g.events[j + 1].t <= t {
                     j += 1;
                 }
-                poss[i] = g.events.get(j).map(|e| e.poss).unwrap_or(0);
+                *ps = g.events.get(j).map(|e| e.poss).unwrap_or(0);
             }
         }
         let prior = |p: usize, i: usize| -> V2 {
@@ -258,7 +260,7 @@ impl Tracks {
         Tracks { n, ball, ball_z, pos, quality, conf, matched: (matched, offered) }
     }
 
-    fn render(g: &Game, n: usize, keys: &[Vec<Key>], prior: &dyn Fn(usize, usize) -> V2) -> (Vec<Vec<V2>>, Vec<Vec<u8>>, Vec<Vec<u8>>) {
+    fn render(g: &Game, n: usize, keys: &[Vec<Key>], prior: &dyn Fn(usize, usize) -> V2) -> Rendered {
         let np = g.people.len();
         let mut pos = vec![vec![V2::ZERO; n]; np];
         let mut quality = vec![vec![0u8; n]; np];
