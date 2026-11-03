@@ -88,7 +88,7 @@ fn backdrop(px: vec2<f32>, world: vec2<f32>) -> vec4<f32> {
   let v = length(px / u.size - vec2<f32>(0.5));
   var c = mix(vec3<f32>(0.016, 0.02, 0.034), vec3<f32>(0.003, 0.004, 0.009), smoothstep(0.1, 0.75, v));
   c = c + vec3<f32>(0.006, 0.008, 0.012) * noise2(px * 0.5);
-  c = c + vec3<f32>(0.10, 0.12, 0.16) * line * (0.35 + 0.3 * u.p0.y);
+  c = c + vec3<f32>(0.10, 0.12, 0.16) * line * (0.08 + 0.06 * u.p0.y);
   return vec4<f32>(c, 1.0);
 }
 "#;
@@ -168,7 +168,7 @@ impl Light {
     fn screen(&self, ctx: &Ctx, q: V2) -> [f32; 2] {
         let (s, portrait) = self.frame(ctx);
         let (w, h) = (ctx.width as f32, ctx.height as f32);
-        let cy = h * 0.5 - 8.0 * ctx.ppp as f32;
+        let cy = h * 0.5 + 4.0 * ctx.ppp as f32;
         if portrait {
             [w * 0.5 - q.y * s, cy - q.x * s]
         } else {
@@ -287,7 +287,7 @@ impl Toy for Light {
         }
         // the comets fly and leave their trace, fainter as the traces pile up, so the lanes he used most
         // glow and the rest stays a haze rather than a white-out
-        let thin = (260.0 / (260.0 + self.passes as f32)).powf(0.55).max(0.22);
+        let thin = (260.0 / (260.0 + self.passes as f32)).powf(0.75).max(0.08);
         for c in &mut self.comets {
             let u0 = c.u;
             let speed = if self.hurry { 3.0 } else { 1.0 };
@@ -304,8 +304,6 @@ impl Toy for Light {
                 let end = c.pass.b;
                 if c.pass.ok {
                     self.pending.push((end, end, [col[0], col[1], col[2], 0.06], 0.1, 0.5));
-                } else {
-                    self.pending.push((end, end, [1.0, 0.35, 0.25, 0.09], 0.12, 0.4));
                 }
                 // where he stood: a grain of light
                 self.pending.push((c.pass.a, c.pass.a, [1.0, 0.97, 0.9, 0.05], 0.08, 0.15));
@@ -343,7 +341,7 @@ impl Toy for Light {
         self.drawn.append(&mut self.pending);
 
         // the pitch's centre sits where screen() puts it
-        let off = (h * 0.5 - (h * 0.5 - 8.0 * ppp)) / s;
+        let off = (h * 0.5 - (h * 0.5 + 4.0 * ppp)) / s;
         let centre = if portrait { [off, 0.0] } else { [0.0, off] };
         let breathe = 0.5 + 0.5 * (self.clock * 0.4).sin();
         self.night.render(&ctx.gpu, &mut enc, target, size, &BackdropParams { time: self.clock, scale: s, center: centre, p: [if portrait { 1.0 } else { 0.0 }, breathe, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] });
@@ -361,7 +359,7 @@ impl Toy for Light {
             let ink = [0.85, 0.82, 0.76, 0.6];
             let dim = [0.6, 0.62, 0.68, 0.45];
             write(p, "SERGIO BUSQUETS", [w * 0.5, 22.0 * ppp], 1.9 * ppp, ink);
-            write(p, &format!("{} PASSES, {} MATCHES", self.passes, self.matches), [w * 0.5, 42.0 * ppp], 1.3 * ppp, dim);
+            write(p, &format!("{} PASS{}, {} MATCH{}", self.passes, if self.passes == 1 { "" } else { "ES" }, self.matches, if self.matches == 1 { "" } else { "ES" }), [w * 0.5, 42.0 * ppp], 1.3 * ppp, dim);
             if let Some(m) = self.current {
                 write(p, m, [w * 0.5, h - 44.0 * ppp], 1.15 * ppp, dim);
             }

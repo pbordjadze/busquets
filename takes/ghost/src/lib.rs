@@ -116,7 +116,7 @@ fn backdrop(px: vec2<f32>, world: vec2<f32>) -> vec4<f32> {
 const WARM: [f32; 3] = [0.98, 0.83, 0.55];
 const COOL: [f32; 3] = [0.55, 0.68, 0.92];
 const EYE: f32 = 1.72;
-const TILT: f32 = -0.07;
+const TILT: f32 = 0.03;
 
 struct Loaded {
     game: Game,
@@ -257,7 +257,7 @@ impl Ghost {
 
     fn cam(&self, ctx: &Ctx, eye: V2) -> Cam {
         let (w, h, _) = self.points(ctx);
-        let focal = (w * 0.5 / 27f32.to_radians().tan()).min(h * 0.5 / 30f32.to_radians().tan());
+        let focal = (w * 0.5 / 30f32.to_radians().tan()).min(h * 0.5 / 30f32.to_radians().tan());
         Cam { eye, yaw: self.cam_yaw, focal, w, h }
     }
 
@@ -580,8 +580,8 @@ impl Toy for Ghost {
                     for d in &g.frames[fi].dots {
                         if let Some((s, z)) = cam.project(d.at, 0.0) {
                             let col = if d.side == 0 { WARM } else { COOL };
-                            let r = (0.35 * cam.focal / z).clamp(1.5 * ppp, 14.0 * ppp);
-                            p.glow([s[0] - r * 2.0, s[1]], [s[0] + r * 2.0, s[1]], r * 0.3, r, rgba(col, 0.4 * a));
+                            let r = (0.5 * cam.focal / z).clamp(1.0 * ppp, 10.0 * ppp);
+                            p.ring(s, r, r * 0.15, r * 0.1, rgba(col, 0.45 * a));
                         }
                     }
                 }
@@ -590,7 +590,8 @@ impl Toy for Ghost {
                     let ra = f.real_at.unwrap();
                     if let (Some((a, z)), Some((b, _))) = (cam.project(ra, 0.3), cam.project(ra, 1.6)) {
                         let col = if f.side == 0 { WARM } else { COOL };
-                        p.line(a, b, 0.24 * cam.focal / z, 0.2 * cam.focal / z, rgba(col, 0.18));
+                        p.line(a, b, 0.06 * cam.focal / z, 0.05 * cam.focal / z, [0.92, 0.94, 0.97, 0.35]);
+                        let _ = col;
                     }
                 }
                 for (z, k) in order {
@@ -643,13 +644,14 @@ impl Toy for Ghost {
                     let col = if f.side == 0 { WARM } else { COOL };
                     if let Some(ra) = f.real_at {
                         let rc = tv.screen(ra);
-                        p.line(rc, c, 0.06 * s, 0.1 * s, rgba(col, 0.18));
-                        p.ring(rc, 0.85 * s, 0.1 * s, 0.1 * s, rgba(col, 0.35));
+                        p.line(rc, c, 0.05 * s, 0.1 * s, rgba(col, 0.22));
+                        p.disc(rc, 0.32 * s, 0.08 * s, [0.92, 0.94, 0.97, 0.6]);
                     }
                     p.disc([c[0] + 0.2 * s, c[1] + 0.25 * s], 1.0 * s, 0.5 * s, [0.0, 0.0, 0.0, 0.3 * f.solid]);
                     // a filled disc as much as we know they were there, a ring for the rest
-                    p.disc(c, 0.95 * s, 0.14 * s, rgba(col, f.solid * f.solid));
-                    p.ring(c, 0.9 * s, 0.14 * s, 0.12 * s, rgba(col, 0.35 + 0.6 * f.solid));
+                    let fill = ((f.solid - 0.55) / 0.4).clamp(0.0, 1.0);
+                    p.disc(c, 0.95 * s, 0.14 * s, rgba(col, fill));
+                    p.ring(c, 0.9 * s, 0.12 * s, 0.1 * s, rgba(col, 0.3 + 0.65 * f.solid));
                     if f.busquets {
                         let br = 0.5 + 0.5 * (clock * 2.0).sin();
                         p.glow_ring(c, (1.6 + 0.2 * br) * s, 0.08 * s, 0.4 * s, [1.0, 0.95, 0.8, 0.45]);
@@ -686,7 +688,7 @@ impl Toy for Ghost {
         }
         // WHAT IF
         let label = if what_if == 0 { "WHAT IF".to_string() } else { TWEAKS[(what_if - 1) % TWEAKS.len()].0.to_string() };
-        let bx = w - 20.0 * ppp;
+        let bx = w - 28.0 * ppp;
         let top_y = top_y + 22.0 * ppp;
         let (dots, lw) = real::dots::layout(&label);
         let c2 = cell * 0.7;
@@ -697,7 +699,7 @@ impl Toy for Ghost {
             p.disc([wx0 + d[0] * c2, top_y + d[1] * c2], c2 * 0.42, c2 * 0.25, if on { [1.0, 0.93, 0.78, 1.0] } else { ink });
         }
         if sim.is_some() {
-            write(p, "RINGS: WHAT HAPPENED", [bx - 21.0 * 6.0 * cell * 0.55, top_y + 22.0 * ppp], cell * 0.55, dim, false);
+            write(p, "WHITE: WHAT HAPPENED", [bx - 20.0 * 6.0 * cell * 0.55, top_y + 22.0 * ppp], cell * 0.55, dim, false);
         }
         // the time bar
         let u = t / g.end;
