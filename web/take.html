@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>TAKE_TITLE</title>
+<style>
+  html, body { margin: 0; height: 100%; background: TAKE_BG; overflow: hidden; overscroll-behavior: none; }
+  canvas { display: block; width: 100vw; height: 100dvh; touch-action: none; -webkit-user-select: none; user-select: none; }
+  #status { position: fixed; left: 0; right: 0; bottom: 24px; text-align: center; font: 15px/1.4 Georgia, serif; color: #8a8a80; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="take"></canvas>
+<div id="status"></div>
+<script type="module">
+  import init, { start } from '../busquets_web.js';
+  const say = t => document.getElementById('status').textContent = t;
+  init().then(() => start('TAKE_ID')).catch(e => {
+    say(String(e).includes('WebGPU') ? 'This needs WebGPU: Safari 26, Chrome or Edge.' : 'It could not start: ' + e);
+    console.error(e);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+module ToyCore {
+    header "toy.h"
+    export *
+}

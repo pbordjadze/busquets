@@ -1,0 +1,32 @@
+[package]
+name = "kit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "What every take stands on: the GPU, a 2D painter of soft shapes, a backdrop, a sound out, the device's C ABI, the web shell and the headless check. Vendored from terra-incognita's toy-kit (NOTICE.md)."
+
+[dependencies]
+wgpu = { workspace = true }
+bytemuck = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+anyhow = { workspace = true }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+image = { workspace = true }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+wgpu = { workspace = true, features = ["metal"] }
+
+[target.'cfg(all(not(target_os = "ios"), not(target_arch = "wasm32")))'.dependencies]
+wgpu = { workspace = true, features = ["vulkan", "metal"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wgpu = { workspace = true, features = ["webgpu"] }
+wasm-bindgen = "=0.2.130"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement", "PointerEvent", "Performance", "console", "DomRect", "Storage", "MediaQueryList", "AudioContext", "BaseAudioContext", "AudioContextState", "AudioDestinationNode", "AudioNode", "ScriptProcessorNode", "AudioProcessingEvent", "AudioBuffer", "Navigator"] }
+console_error_panic_hook = "0.1"

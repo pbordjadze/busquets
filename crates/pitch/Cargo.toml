@@ -1,0 +1,11 @@
+[package]
+name = "pitch"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "The football every take shares: players and a ball on simple rules, your-pace time, scanning, passing and the passing-lane model. No GPU."
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }

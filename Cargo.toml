@@ -1,0 +1,36 @@
+# Busquets: a shared engine for "get the ball, make a decision, at your own pace" (README.md), and the
+# takes built on it. kit is the device/GPU/check layer (vendored from terra-incognita's toy-kit, see
+# NOTICE.md); pitch is the football: players, ball, your-pace time, scanning, passing lanes.
+[workspace]
+resolver = "2"
+members = ["crates/kit", "crates/pitch", "crates/web", "takes/pivot"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[workspace.dependencies]
+kit = { path = "crates/kit" }
+pitch = { path = "crates/pitch" }
+wgpu = { version = "26", default-features = false, features = ["wgsl"] }
+bytemuck = { version = "1", features = ["derive"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+log = "0.4"
+anyhow = "1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 4
+panic = "abort"
+strip = "debuginfo"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

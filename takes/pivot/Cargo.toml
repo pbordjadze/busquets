@@ -1,0 +1,20 @@
+[package]
+name = "pivot"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Pivot (a working title): the never-ending rondo, you the holding midfielder."
+
+[lib]
+crate-type = ["lib", "staticlib"]
+
+[dependencies]
+kit = { workspace = true }
+pitch = { workspace = true }
+wgpu = { workspace = true }
+anyhow = { workspace = true }
+
+[[bin]]
+name = "pivot-check"
+path = "src/bin/check.rs"
