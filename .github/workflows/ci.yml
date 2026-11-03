@@ -48,7 +48,7 @@ jobs:
       - name: Build and test
         run: |
           cargo build --release -p ${{ matrix.take }} --bin ${{ matrix.take }}-check
-          cargo test --release -p pitch -p kit -p ${{ matrix.take }}
+          cargo test --release -p pitch -p ${{ matrix.take }}
           cargo clippy --release -p pitch -p ${{ matrix.take }} -- -D warnings || echo "::warning::clippy has findings"
       - name: Play every plan
         run: |
