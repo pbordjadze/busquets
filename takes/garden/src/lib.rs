@@ -294,4 +294,5 @@ impl Toy for Garden {
     }
 }
 
+#[cfg(feature = "app")]
 kit::ios_shell!(Garden);

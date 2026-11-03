@@ -276,4 +276,5 @@ impl Toy for Pulse {
     }
 }
 
+#[cfg(feature = "app")]
 kit::ios_shell!(Pulse);

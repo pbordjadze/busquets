@@ -375,4 +375,5 @@ impl Toy for Light {
     }
 }
 
+#[cfg(feature = "app")]
 kit::ios_shell!(Light);

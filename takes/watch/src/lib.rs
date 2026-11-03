@@ -489,4 +489,5 @@ impl Toy for Watch {
     }
 }
 
+#[cfg(feature = "app")]
 kit::ios_shell!(Watch);

@@ -21,3 +21,8 @@ serde_json = { workspace = true }
 [[bin]]
 name = "ghost-check"
 path = "src/bin/check.rs"
+
+[features]
+# the take as its own app (its C ABI); the one app (takes/busquets) turns it off to hold every take
+default = ["app"]
+app = []

@@ -4,7 +4,7 @@ name: CI
 #   check   Linux: built, tested, every plan in takes/<take>/plans played headless on Mesa's software
 #           Vulkan; the shots, films (MP4 and contact sheet) and sound are the `<take>-check` artifact.
 #   web     the WebGPU build (tools/web-build.sh) as the `web` artifact, a directory any static server serves.
-#   ipa     macOS, one job for every take in turn (the five macOS runners are shared with every app: one
+#   ipa     macOS, one job building the one app (takes/busquets, every take inside it) (the five macOS runners are shared with every app: one
 #           IPA run a round, and look at the queue first). Only when asked: a push whose first line
 #           carries `[ipa]`, or a run started by hand with `ipa`. On main each take is released as
 #           `<take>-build-<n>` (the five newest kept); elsewhere the IPAs are the `ipa` artifact.
@@ -36,7 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        take: [pivot, pulse, garden, watch, eyes, ghost, light]
+        take: [busquets, pivot, pulse, garden, watch, eyes, ghost, light]
     steps:
       - uses: actions/checkout@v5
         with: { persist-credentials: false }
@@ -102,7 +102,7 @@ jobs:
       - name: Build the IPAs
         run: |
           mkdir -p out
-          for take in pivot pulse garden watch eyes ghost light; do
+          for take in busquets; do
             BUILD="$BUILD" bash ios/build.sh $take out 2>&1 | tee out/$take-build.log | tail -20
             ls -l out/$take.ipa
           done
@@ -112,7 +112,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           git log -1 --format=%s > out/notes.txt
-          for take in pivot pulse garden watch eyes ghost light; do
+          for take in busquets; do
             TAG="$take-build-$BUILD"
             NAME="$(python3 -c "import json; print(json.load(open('takes/$take/toy.json'))['name'])")"
             if gh release view "$TAG" > /dev/null 2>&1; then

@@ -558,4 +558,5 @@ impl Toy for Eyes {
     }
 }
 
+#[cfg(feature = "app")]
 kit::ios_shell!(Eyes);

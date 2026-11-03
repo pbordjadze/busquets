@@ -725,4 +725,5 @@ fn short_team(name: &str) -> String {
     name.split_whitespace().next().unwrap_or(name).to_uppercase()
 }
 
+#[cfg(feature = "app")]
 kit::ios_shell!(Ghost);

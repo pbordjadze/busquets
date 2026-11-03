@@ -16,3 +16,7 @@ One line a round (what changed, what the critic said, what is next).
    the shoulder, 3D), four visual directions (Wash, Night, Paper, Lines; blind critic: Wash first,
    then Night, Paper, Lines; take Wash's medium forward with Night's pressure trails and Lines'
    facing ticks). Merged the real-matches session's ghost and light (StatsBomb at run time).
+3. Nov 3: "Busquets should just be an app" (relayed): takes/busquets holds every take behind a home of
+   seven doors (edge swipe back); Ghost and Light fetch StatsBomb on the device through the Swift
+   shell's URLSession (toy_fetch), still never bundled; CI builds and publishes only this one app.
+   The kit became toy-kit 0.2.0 from terra-incognita, a pinned git dependency.

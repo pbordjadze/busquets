@@ -150,7 +150,27 @@ def eyes():
     return img
 
 
-TAKES = {'watch': watch, 'eyes': eyes, 'pivot': pivot, 'pulse': pulse, 'garden': garden, 'ghost': ghost, 'light': light}
+def busquets():
+    img = Image.new('RGBA', (N, N), (8, 16, 11, 255))
+    c = (N // 2, N // 2)
+    cols = [(92, 199, 122), (255, 204, 115), (230, 219, 194), (153, 217, 255), (140, 158, 255), (235, 240, 255), (255, 140, 77)]
+    pts = [(c[0] + 330 * math.cos(-math.pi / 2 + k * math.tau / 7), c[1] + 330 * math.sin(-math.pi / 2 + k * math.tau / 7)) for k in range(7)]
+    th = layer()
+    td = ImageDraw.Draw(th)
+    for k in range(7):
+        td.line([pts[k], pts[(k + 1) % 7]], fill=(150, 190, 165, 90), width=6)
+        td.line([c, pts[k]], fill=(150, 190, 165, 50), width=4)
+    blur_over(img, th, 6)
+    st = layer()
+    sd = ImageDraw.Draw(st)
+    for p, col in zip(pts, cols):
+        sd.ellipse([p[0] - 78, p[1] - 78, p[0] + 78, p[1] + 78], outline=col + (255,), width=16)
+    sd.ellipse([c[0] - 46, c[1] - 46, c[0] + 46, c[1] + 46], fill=(255, 250, 240, 255))
+    blur_over(img, st, 18)
+    return img
+
+
+TAKES = {'busquets': busquets, 'watch': watch, 'eyes': eyes, 'pivot': pivot, 'pulse': pulse, 'garden': garden, 'ghost': ghost, 'light': light}
 
 if __name__ == '__main__':
     for t in sys.argv[1:] or TAKES:

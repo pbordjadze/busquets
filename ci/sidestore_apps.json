@@ -1,81 +1,15 @@
 {
-  "_": "The apps this repository's SideStore source lists (ci/sidestore_source.py): each from the releases tagged <tag>-<n> that carry an .ipa asset. Names are working titles; the names are Paul's.",
+  "_": "The apps this repository's SideStore source lists (ci/sidestore_source.py): each from the releases tagged <tag>-<n> that carry an .ipa asset. Since Nov 3 one app, Busquets, holds every take; the names are working titles, Paul's to choose.",
   "apps": [
     {
-      "tag": "pivot-build",
-      "name": "Pivot",
-      "bundleIdentifier": "com.pbordjadze.busquets.pivot",
-      "subtitle": "The never-ending rondo; you the pivot",
-      "localizedDescription": "A sketch. You are the holding midfielder in an endless rondo. When the ball comes, time softens to your pace; the passes you could make glow and close as the pressers shift. Move a finger to look around; let it go fast to pass. Working title.",
-      "icon": "pivot-icon.png",
-      "iconSource": "takes/pivot/icon.png",
-      "tintColor": "#2E7D46",
-      "minOSVersion": "17.0"
-    },
-    {
-      "tag": "pulse-build",
-      "name": "Pulse",
-      "bundleIdentifier": "com.pbordjadze.busquets.pulse",
-      "subtitle": "A constellation keeping its shape; each pass a note",
-      "localizedDescription": "A sketch. The same rondo as light: teammates a drifting constellation, pressers dark fields, the ball a pulse; each pass a note, so a good sequence is a melody. Working title.",
-      "icon": "pulse-icon.png",
-      "iconSource": "takes/pulse/icon.png",
-      "tintColor": "#E8C877",
-      "minOSVersion": "17.0"
-    },
-    {
-      "tag": "garden-build",
-      "name": "Rondo Garden",
-      "bundleIdentifier": "com.pbordjadze.busquets.garden",
-      "subtitle": "An endless rondo that draws its own pitch",
-      "localizedDescription": "A sketch. A slow, endless rondo on pale ground; every pass leaves its trail in ink and the pitch is slowly drawn. Shake to wash it clean. Working title.",
-      "icon": "garden-icon.png",
-      "iconSource": "takes/garden/icon.png",
-      "tintColor": "#2B3A5A",
-      "minOSVersion": "17.0"
-    },
-    {
-      "tag": "ghost-build",
-      "name": "Ghost",
-      "bundleIdentifier": "com.pbordjadze.busquets.ghost",
-      "subtitle": "A real match, through any player’s eyes",
-      "localizedDescription": "A sketch. Croatia 3-5 Spain (Euro 2020) from StatsBomb open data, fetched when it opens, replayed from above or through any player’s eyes, Busquets first. Faded figures are inferred. WHAT IF changes one thing and lets the agents play on beside the real match. Data: StatsBomb. Working title.",
-      "icon": "ghost-icon.png",
-      "iconSource": "takes/ghost/icon.png",
-      "tintColor": "#1B2A3A",
-      "minOSVersion": "17.0"
-    },
-    {
-      "tag": "light-build",
-      "name": "Light",
-      "bundleIdentifier": "com.pbordjadze.busquets.light",
-      "subtitle": "Every pass Busquets made, as light",
-      "localizedDescription": "A sketch. Every pass Sergio Busquets made in StatsBomb’s open data, drawn as light on a dark pitch, building over time. Data: StatsBomb. Working title.",
-      "icon": "light-icon.png",
-      "iconSource": "takes/light/icon.png",
-      "tintColor": "#2A2418",
-      "minOSVersion": "17.0"
-    },
-    {
-      "tag": "watch-build",
-      "name": "Watch",
-      "bundleIdentifier": "com.pbordjadze.busquets.watch",
-      "subtitle": "Agents playing football; your hand on the dials",
-      "localizedDescription": "A sketch. Eleven a side (or a rondo) playing itself; drag on a side to change how it presses and how much it risks, pinch to change its shape, and watch the tactics change. Working title.",
-      "icon": "watch-icon.png",
-      "iconSource": "takes/watch/icon.png",
-      "tintColor": "#2E7D46",
-      "minOSVersion": "17.0"
-    },
-    {
-      "tag": "eyes-build",
-      "name": "Eyes",
-      "bundleIdentifier": "com.pbordjadze.busquets.eyes",
-      "subtitle": "The pivot, over your shoulder",
-      "localizedDescription": "A sketch. The rondo in 3D from just behind you: drag to turn your head, flick up to pass at the pace of your finger; the pressers lean where they read your look. Working title.",
-      "icon": "eyes-icon.png",
-      "iconSource": "takes/eyes/icon.png",
-      "tintColor": "#3A4A7A",
+      "tag": "busquets-build",
+      "name": "Busquets",
+      "bundleIdentifier": "com.pbordjadze.busquets",
+      "subtitle": "Receive, scan, decide, release, at your own pace",
+      "localizedDescription": "Sketches of being the pivot, in one app. Tap a door: Pivot, Pulse, Rondo Garden, Watch, Eyes, Ghost (real matches replayed, StatsBomb open data fetched at run time) or Light (his passes as light). Swipe in from the left edge to come back. Working title.",
+      "icon": "busquets-icon.png",
+      "iconSource": "takes/busquets/icon.png",
+      "tintColor": "#5CC77A",
       "minOSVersion": "17.0"
     }
   ]

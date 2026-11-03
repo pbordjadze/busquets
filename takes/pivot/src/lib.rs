@@ -282,4 +282,5 @@ impl Toy for Pivot {
     }
 }
 
+#[cfg(feature = "app")]
 kit::ios_shell!(Pivot);

@@ -158,6 +158,21 @@ final class ToyView: UIView {
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) { send(touches, 3) }
 }
 
+/// A fetch for the library (crates/real: StatsBomb's open data, fetched at run time, never bundled):
+/// `done(token, bytes, count, ok)` is called on URLSession's thread when it has come.
+@_cdecl("toy_fetch")
+public func toyFetch(_ url: UnsafePointer<CChar>, _ token: UInt64, _ done: @convention(c) (UInt64, UnsafePointer<UInt8>?, Int, Bool) -> Void) {
+    guard let u = URL(string: String(cString: url)) else { done(token, nil, 0, false); return }
+    URLSession.shared.dataTask(with: u) { data, response, _ in
+        let ok = ((response as? HTTPURLResponse)?.statusCode ?? 0) == 200
+        if ok, let data {
+            data.withUnsafeBytes { raw in done(token, raw.bindMemory(to: UInt8.self).baseAddress, data.count, true) }
+        } else {
+            done(token, nil, 0, false)
+        }
+    }.resume()
+}
+
 final class ToyController: UIViewController {
     override func loadView() { view = ToyView(frame: UIScreen.main.bounds) }
     override var prefersStatusBarHidden: Bool { true }

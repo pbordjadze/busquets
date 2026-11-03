@@ -23,6 +23,14 @@ painting-company row 207; the names are working titles (the names are Paul's).
 - **Without you.** Every player is an agent with tunable traits; the same world plays itself, from a
   rondo to eleven a side (`Config::eleven`), for watching and tinkering.
 
+## The app
+
+`takes/busquets` is the one app (working title Busquets, `com.pbordjadze.busquets`): its home is a ring of
+seven glowing doors around you, a ball going round them; tap a door to enter a take, swipe in from
+the left edge to come back (each take keeps going where you left it). Each take is also a crate on its
+own (its `app` feature gives it its own C ABI); the one app turns that off and holds them all. CI
+builds only this app's IPA and the SideStore source lists only it.
+
 ## The takes
 
 | take | what it is | bundle id |

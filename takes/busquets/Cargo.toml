@@ -1,0 +1,29 @@
+[package]
+name = "busquets"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Busquets (a working title): the one app, every take inside it."
+
+[lib]
+crate-type = ["lib", "staticlib"]
+
+[dependencies]
+kit = { workspace = true }
+pitch = { workspace = true }
+wgpu = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+pivot = { path = "../pivot", default-features = false }
+pulse = { path = "../pulse", default-features = false }
+garden = { path = "../garden", default-features = false }
+watch = { path = "../watch", default-features = false }
+eyes = { path = "../eyes", default-features = false }
+ghost = { path = "../ghost", default-features = false }
+light = { path = "../light", default-features = false }
+
+[[bin]]
+name = "busquets-check"
+path = "src/bin/check.rs"
