@@ -11,9 +11,17 @@ painting-company row 207; the names are working titles (the names are Paul's).
 - **Scan.** A finger that moves is your head turning: you see that side for a moment. What you have
   not looked at lately you only remember (where you last saw it). The lanes you are shown are reckoned
   from what you remember; the ball meets the real pressers.
-- **Decide / release.** Let the finger go fast and the ball goes that way, to the teammate who best
-  answers the direction. Flick while the ball is still coming and it goes first time. A tap on a
-  teammate passes to them.
+- **Feint.** The pressers read your body: where you face and where you glance is where they guess the
+  pass will go, and held a moment the guess becomes a commitment (they lean, and are slow to turn).
+  Look one way, release the other. A look with the ball at your feet costs a little world time, which
+  is what sells it.
+- **Decide / release, weighted.** Let the finger go fast and the ball goes that way at the finger's
+  pace (`pitch::pace_of`): the ball rolls and slows, so too soft is cut out, too firm runs past, and
+  just right meets the runner in stride (a little bloom). While the finger moves with the ball the
+  pass it would make is drawn. A flick while the ball is still coming goes first time; a tap on a
+  teammate passes to them, weighted for you.
+- **Without you.** Every player is an agent with tunable traits; the same world plays itself, from a
+  rondo to eleven a side (`Config::eleven`), for watching and tinkering.
 
 ## The takes
 
@@ -21,6 +29,9 @@ painting-company row 207; the names are working titles (the names are Paul's).
 | --- | --- | --- |
 | `takes/pivot` | The literal one: a floodlit pitch from above, the never-ending rondo, you the holding midfielder; lanes glow and close as the pressers shift; unseen pressers are rings where you last saw them. | `com.pbordjadze.busquets.pivot` |
 | `takes/pulse` | The abstract one: teammates a drifting constellation, pressers dark fields, the ball a pulse of light; each pass a note (direction picks the degree, length the octave), so a good sequence is a melody. | `com.pbordjadze.busquets.pulse` |
+| `takes/watch` | The engine playing itself, eleven a side or a rondo; your hand on the dials (traits, shape). | `com.pbordjadze.busquets.watch` |
+| `takes/eyes` | Pivot over the shoulder, in 3D: scanning, feinting and weighting through your own eyes. | `com.pbordjadze.busquets.eyes` |
+| `takes/studies` | Four visual directions (night cam, paper cut, living lines, wash), each a loop of the rondo playing itself; web only. | |
 | `takes/garden` | The meditative one: a slower endless rondo on pale ground; every pass leaves its trail in ink and the pitch is slowly drawn (kept between visits; shake to wash it clean). | `com.pbordjadze.busquets.garden` |
 
 Each is a crate: `src/lib.rs` the take (a `kit::Toy`), `src/bin/check.rs` its headless check,
@@ -29,12 +40,14 @@ Each is a crate: `src/lib.rs` the take (a `kit::Toy`), `src/bin/check.rs` its he
 
 ## The engine
 
-- `crates/pitch`: the football, no GPU. `world.rs` the emergent rondo (teammates keep a breathing
-  shape and each tries a few spots near home for the most open lane from the ball; pressers split
-  into one to the ball and the rest into the most open lanes, late and a little at random; a ball
-  within a presser's reach is poked loose and the nearest of your side collects it), your-pace time,
-  what you have seen; `lane.rs` the passing-lane model (the ball's lead over the quickest presser at
-  every point of the line, eased into 0..1; one rule for what glows and what is intercepted);
+- `crates/pitch`: the football, no GPU. `world.rs` two teams of agents (traits: scan, press, risk,
+  offer, run, read, speed): the side with the ball keeps a breathing shape, offers angles and runs in
+  behind; the other sends one to the ball and the rest into the most open lanes, reading the passer's
+  body; a rolling ball with friction, taken by whoever reaches it first at a pace they can control
+  (`predict` plays a pass forward on that rule; `weigh` finds the best pace; agents choose with it,
+  takes draw it); your-pace time; what you have seen; possession swaps and chances on a full pitch;
+  `World::from_snapshot` starts it from any moment (real-match data enters here). `lane.rs` the
+  quick lane model the agents use to find space;
   `gesture.rs` and `view.rs` the fingers' grammar and the screen↔world mapping every take shares.
   `cargo run --release -p pitch --example timeline` prints a minute of play.
 - `crates/kit`: vendored from terra-incognita's toy-kit (NOTICE.md; why vendored, not a git dependency,
