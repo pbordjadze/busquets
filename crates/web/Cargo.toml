@@ -10,7 +10,7 @@ description = "The web build: every take in one wasm, chosen by the page (WebGPU
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-kit = { workspace = true }
+kit = { workspace = true, features = ["web"] }
 pivot = { path = "../../takes/pivot" }
 pulse = { path = "../../takes/pulse" }
 garden = { path = "../../takes/garden" }

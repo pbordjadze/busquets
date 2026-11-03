@@ -87,11 +87,11 @@ dependencies = [
  "eyes",
  "garden",
  "ghost",
- "kit",
  "light",
  "pivot",
  "pulse",
  "studies",
+ "toy-kit",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "watch",
@@ -218,8 +218,8 @@ name = "eyes"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "kit",
  "pitch",
+ "toy-kit",
  "wgpu",
 ]
 
@@ -305,10 +305,10 @@ name = "garden"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "kit",
  "pitch",
  "serde",
  "serde_json",
+ "toy-kit",
  "wgpu",
 ]
 
@@ -317,11 +317,11 @@ name = "ghost"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "kit",
  "pitch",
  "real",
  "serde",
  "serde_json",
+ "toy-kit",
  "wgpu",
 ]
 
@@ -408,6 +408,8 @@ dependencies = [
  "moxcms",
  "num-traits",
  "png",
+ "zune-core",
+ "zune-jpeg",
 ]
 
 [[package]]
@@ -438,24 +440,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "kit"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bytemuck",
- "console_error_panic_hook",
- "image",
- "js-sys",
- "log",
- "serde",
- "serde_json",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "wgpu",
-]
-
-[[package]]
 name = "libc"
 version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -482,11 +466,11 @@ name = "light"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "kit",
  "pitch",
  "real",
  "serde",
  "serde_json",
+ "toy-kit",
  "wgpu",
 ]
 
@@ -679,8 +663,8 @@ name = "pivot"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "kit",
  "pitch",
+ "toy-kit",
  "wgpu",
 ]
 
@@ -732,8 +716,8 @@ name = "pulse"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "kit",
  "pitch",
+ "toy-kit",
  "wgpu",
 ]
 
@@ -886,8 +870,8 @@ name = "studies"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "kit",
  "pitch",
+ "toy-kit",
  "wgpu",
 ]
 
@@ -949,6 +933,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b52fd3255258d26fac7264ab5a76b53c13367136dc011d3d6ad4f8ed070396a3"
 dependencies = [
  "pin-project-lite",
+]
+
+[[package]]
+name = "toy-kit"
+version = "0.2.0"
+source = "git+https://github.com/pbordjadze/terra-incognita?rev=85b00e81298a1bd3014e29ca5d9b1cbe80675a25#85b00e81298a1bd3014e29ca5d9b1cbe80675a25"
+dependencies = [
+ "anyhow",
+ "bytemuck",
+ "console_error_panic_hook",
+ "image",
+ "js-sys",
+ "log",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+ "wgpu",
 ]
 
 [[package]]
@@ -1023,8 +1026,8 @@ name = "watch"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "kit",
  "pitch",
+ "toy-kit",
  "wgpu",
 ]
 
@@ -1347,3 +1350,18 @@ name = "zmij"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+
+[[package]]
+name = "zune-core"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d56377fd46368984a170bc5aac5567e52ca5da874caa60bea39fcbca78fb658b"
+
+[[package]]
+name = "zune-jpeg"
+version = "0.5.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
+dependencies = [
+ "zune-core",
+]

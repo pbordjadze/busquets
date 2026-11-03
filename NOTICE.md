@@ -1,6 +1,12 @@
 # Notice
 
-`crates/kit` is vendored from [pbordjadze/terra-incognita](https://github.com/pbordjadze/terra-incognita)
+The kit is now a git dependency: toy-kit 0.2.0 from
+[pbordjadze/terra-incognita](https://github.com/pbordjadze/terra-incognita) (`toys/crates/toy-kit`), pinned
+to commit `85b00e8` (Cargo.toml), without its globe (`default-features = false`; `web` in crates/web).
+It took in the modules this repository added (paint, backdrop, layer, sound, web, `check::main_with`), so
+nothing is vendored any more. What follows is the history of the copy it replaced.
+
+`crates/kit` was vendored from [pbordjadze/terra-incognita](https://github.com/pbordjadze/terra-incognita)
 `toys/crates/toy-kit` at commit `6bf0613` (Nov 3, 2026), itself copied from Adrift's engine
 (`adrift/crates/adrift-core`): the `Toy` trait, `Host`, `Ctx`, `Synth`, the `ios_shell!` C ABI, the
 headless check (`check.rs`) and the GPU setup (`gpu.rs`) are theirs, trimmed of the globe and the real-world

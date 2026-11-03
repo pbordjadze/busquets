@@ -50,11 +50,11 @@ Each is a crate: `src/lib.rs` the take (a `kit::Toy`), `src/bin/check.rs` its he
   quick lane model the agents use to find space;
   `gesture.rs` and `view.rs` the fingers' grammar and the screen↔world mapping every take shares.
   `cargo run --release -p pitch --example timeline` prints a minute of play.
-- `crates/kit`: vendored from terra-incognita's toy-kit (NOTICE.md; why vendored, not a git dependency,
-  is there too): the `Toy` trait, the iOS C ABI (`ios_shell!`), the headless check, the GPU. New here:
-  `paint` (instanced soft discs, rings and strokes, over and additive), `backdrop` (a take's
-  full-screen shader), `layer` (a persistent texture: the garden's drawing), `sound` (struck notes and
-  a low bed), `web` (the WebGPU shell).
+- the kit: toy-kit from terra-incognita, a pinned git dependency without its globe (NOTICE.md): the
+  `Toy` trait, the iOS C ABI (`ios_shell!`), the headless check (plans to PNG, film, WAV, loudness), the
+  GPU, `paint` (instanced soft discs, rings and strokes), `backdrop` (a take's full-screen shader),
+  `layer` (a persistent texture), `sound` (struck notes and a bed), `web` (the WebGPU shell). Imported
+  as `kit` (`package = "toy-kit"`). Behind this proxy, cargo needs `CARGO_NET_GIT_FETCH_WITH_CLI=true`.
 - `crates/web`: every take in one wasm; `web/` the pages.
 - `ios/`: the Swift shell every take shares, and `build.sh <take>` (an unsigned IPA).
 
@@ -66,7 +66,7 @@ Each is a crate: `src/lib.rs` the take (a `kit::Toy`), `src/bin/check.rs` its he
     bash tools/film.sh build/pivot/play                      # an MP4 and a contact sheet of the film
 
 A plan is fingers over time (taps, drags, holds, raw down/move/up, a shake), shots, a film and the
-sound (`crates/kit/src/check.rs` has the format). Look at every render before pushing.
+sound (toy-kit's `check.rs` has the format). Look at every render before pushing.
 
 The web build: `rustup target add wasm32-unknown-unknown`, `cargo install wasm-bindgen-cli --version
 0.2.130 --locked`, then `bash tools/web-build.sh` and serve `build/web` (`/pivot/`, `/pulse/`,
