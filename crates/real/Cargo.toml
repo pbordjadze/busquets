@@ -1,0 +1,19 @@
+[package]
+name = "real"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Real matches on the engine: StatsBomb open data (events, 360 freeze-frames) read at run time, every player's path reconstructed (observed, seen, or inferred), Busquets measured, and an 11-a-side play-on for what-ifs. No GPU; no data in the repository."
+
+[dependencies]
+pitch = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "=0.2.130"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+web-sys = { version = "0.3", features = ["Window", "Request", "RequestInit", "RequestMode", "Response"] }

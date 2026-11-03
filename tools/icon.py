@@ -86,7 +86,39 @@ def garden():
     return img
 
 
-TAKES = {'pivot': pivot, 'pulse': pulse, 'garden': garden}
+def ghost():
+    # a night pitch seen low, a figure solid and one a ghost ring
+    img = Image.new('RGBA', (N, N), (6, 9, 14, 255))
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, N * 0.55, N, N], fill=(10, 30, 18, 255))
+    d.line([0, N * 0.72, N, N * 0.6], fill=(150, 170, 160, 255), width=6)
+    st = layer()
+    sd = ImageDraw.Draw(st)
+    sd.rounded_rectangle([N * 0.36, N * 0.3, N * 0.5, N * 0.62], radius=40, fill=(250, 212, 140, 255))
+    sd.ellipse([N * 0.39, N * 0.2, N * 0.47, N * 0.28], fill=(220, 185, 150, 255))
+    sd.rounded_rectangle([N * 0.58, N * 0.36, N * 0.68, N * 0.6], radius=30, outline=(140, 175, 235, 200), width=8)
+    blur_over(img, st, 3)
+    return img
+
+
+def light():
+    img = Image.new('RGBA', (N, N), (4, 5, 10, 255))
+    random.seed(11)
+    c = (N * 0.5, N * 0.5)
+    hues = [(255, 184, 97), (250, 230, 200), (128, 168, 255)]
+    for k in range(70):
+        a = (c[0] + random.gauss(0, 140), c[1] + random.gauss(0, 110))
+        b = (a[0] + random.gauss(0, 220), a[1] + random.gauss(-60, 160))
+        lay = layer()
+        ImageDraw.Draw(lay).line([a, b], fill=hues[k % 3] + (90,), width=6)
+        img.alpha_composite(lay.filter(ImageFilter.GaussianBlur(3)))
+    st = layer()
+    ImageDraw.Draw(st).ellipse([c[0] - 22, c[1] - 22, c[0] + 22, c[1] + 22], fill=(255, 250, 240, 255))
+    blur_over(img, st, 10)
+    return img
+
+
+TAKES = {'pivot': pivot, 'pulse': pulse, 'garden': garden, 'ghost': ghost, 'light': light}
 
 if __name__ == '__main__':
     for t in sys.argv[1:] or TAKES:

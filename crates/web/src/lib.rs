@@ -12,6 +12,8 @@ pub async fn start(take: String) -> Result<(), JsValue> {
         "garden" => kit::web::run::<garden::Garden>("take", &key).await,
         "watch" => kit::web::run::<watch::Watch>("take", &key).await,
         "eyes" => kit::web::run::<eyes::Eyes>("take", &key).await,
+        "ghost" => kit::web::run::<ghost::Ghost>("take", &key).await,
+        "light" => kit::web::run::<light::Light>("take", &key).await,
         "night" => kit::web::run::<studies::Night>("take", &key).await,
         "paper" => kit::web::run::<studies::Paper>("take", &key).await,
         "lines" => kit::web::run::<studies::Lines>("take", &key).await,

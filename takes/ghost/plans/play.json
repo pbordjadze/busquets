@@ -1,0 +1,11 @@
+{ "size": [1179, 2556], "ppp": 3, "seconds": 40, "fps": 30,
+  "_": "Busquets' eyes before his first touch; rise above; scrub on; WHAT IF from above; tap Busquets to see your version through his eyes; the next change.",
+  "events": [
+    { "t": 10.0, "tap": [196, 300] },
+    { "t": 13.0, "down": [100, 806], "id": 3 }, { "t": 13.3, "move": [150, 806], "id": 3 }, { "t": 13.6, "up": [150, 806], "id": 3 },
+    { "t": 20.0, "tap": [340, 52] },
+    { "t": 34.0, "tap": [340, 52] }
+  ],
+  "shots": [2, 5, 6.5, 7.2, 9, 11, 14, 19, 24, 30, 38],
+  "film": { "from": 0, "to": 40, "every": 0.25 },
+  "audio": false }

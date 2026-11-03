@@ -33,6 +33,28 @@
       "iconSource": "takes/garden/icon.png",
       "tintColor": "#2B3A5A",
       "minOSVersion": "17.0"
+    },
+    {
+      "tag": "ghost-build",
+      "name": "Ghost",
+      "bundleIdentifier": "com.pbordjadze.busquets.ghost",
+      "subtitle": "A real match, through any player’s eyes",
+      "localizedDescription": "A sketch. Croatia 3-5 Spain (Euro 2020) from StatsBomb open data, fetched when it opens, replayed from above or through any player’s eyes, Busquets first. Faded figures are inferred. WHAT IF changes one thing and lets the agents play on beside the real match. Data: StatsBomb. Working title.",
+      "icon": "ghost-icon.png",
+      "iconSource": "takes/ghost/icon.png",
+      "tintColor": "#1B2A3A",
+      "minOSVersion": "17.0"
+    },
+    {
+      "tag": "light-build",
+      "name": "Light",
+      "bundleIdentifier": "com.pbordjadze.busquets.light",
+      "subtitle": "Every pass Busquets made, as light",
+      "localizedDescription": "A sketch. Every pass Sergio Busquets made in StatsBomb’s open data, drawn as light on a dark pitch, building over time. Data: StatsBomb. Working title.",
+      "icon": "light-icon.png",
+      "iconSource": "takes/light/icon.png",
+      "tintColor": "#2A2418",
+      "minOSVersion": "17.0"
     }
   ]
 }
