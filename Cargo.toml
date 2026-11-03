@@ -3,7 +3,7 @@
 # NOTICE.md); pitch is the football: players, ball, your-pace time, scanning, passing lanes.
 [workspace]
 resolver = "2"
-members = ["crates/kit", "crates/pitch", "crates/web", "takes/pivot", "takes/pulse", "takes/garden"]
+members = ["crates/kit", "crates/pitch", "crates/real", "takes/ghost", "crates/web", "takes/pivot", "takes/pulse", "takes/garden"]
 
 [workspace.package]
 version = "0.1.0"
@@ -14,6 +14,7 @@ publish = false
 [workspace.dependencies]
 kit = { path = "crates/kit" }
 pitch = { path = "crates/pitch" }
+real = { path = "crates/real" }
 wgpu = { version = "26", default-features = false, features = ["wgsl"] }
 bytemuck = { version = "1", features = ["derive"] }
 image = { version = "0.25", default-features = false, features = ["png"] }

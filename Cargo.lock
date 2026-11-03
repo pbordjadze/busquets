@@ -85,6 +85,7 @@ name = "busquets-web"
 version = "0.1.0"
 dependencies = [
  "garden",
+ "ghost",
  "kit",
  "pivot",
  "pulse",
@@ -292,6 +293,19 @@ dependencies = [
  "anyhow",
  "kit",
  "pitch",
+ "serde",
+ "serde_json",
+ "wgpu",
+]
+
+[[package]]
+name = "ghost"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "kit",
+ "pitch",
+ "real",
  "serde",
  "serde_json",
  "wgpu",
@@ -716,6 +730,20 @@ name = "raw-window-handle"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "20675572f6f24e9e76ef639bc5552774ed45f1c30e2951e1e99c59888861c539"
+
+[[package]]
+name = "real"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "js-sys",
+ "pitch",
+ "serde",
+ "serde_json",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+ "web-sys",
+]
 
 [[package]]
 name = "redox_syscall"

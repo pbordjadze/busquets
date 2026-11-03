@@ -14,6 +14,7 @@ kit = { workspace = true }
 pivot = { path = "../../takes/pivot" }
 pulse = { path = "../../takes/pulse" }
 garden = { path = "../../takes/garden" }
+ghost = { path = "../../takes/ghost" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "=0.2.130"
