@@ -9,7 +9,7 @@
 //! one app's pointer, frame, sound, shake and saved state go to whichever take is open.
 
 use kit::backdrop::{Backdrop, BackdropParams};
-use kit::info::{Demo, Stroke};
+use kit::info::{Demo, Rules, Stroke};
 use kit::paint::Painter;
 use kit::sound::{Bells, Note};
 use kit::{Ctx, Phase, PointerEvent, SharedSynth, Synth, Toy};
@@ -26,6 +26,7 @@ trait Scene {
     fn settings(&mut self, ctx: &mut Ctx);
     fn save(&self) -> Option<String>;
     fn demo(&self, ctx: &Ctx) -> Option<Demo>;
+    fn rules(&self) -> Option<Rules>;
 }
 
 /// A take as a scene.
@@ -55,6 +56,9 @@ impl<T: Toy> Scene for Take<T> {
     }
     fn demo(&self, ctx: &Ctx) -> Option<Demo> {
         Toy::demo(&self.0, ctx)
+    }
+    fn rules(&self) -> Option<Rules> {
+        Toy::rules(&self.0)
     }
 }
 
@@ -376,6 +380,20 @@ impl Toy for Busquets {
         Some(Demo::new(
             "Seven ways to play Busquets' job: the ball comes, you look, you pass.",
             vec![Stroke::tap(0.5, door), Stroke::drag(2.6, 0.7, [4.0, h * 0.55], [w * 0.55, h * 0.55])],
+        ))
+    }
+
+    /// The rules mark: at home, what every door shares; in a take, that take's own.
+    fn rules(&self) -> Option<Rules> {
+        if let Some(i) = self.open {
+            return self.scenes[i].as_ref().and_then(|(s, _)| s.rules());
+        }
+        Some(Rules::new(
+            &[
+                "Behind every door, the same football: players who chase space and read the passer.",
+                "A pass is only as good as what was seen before the ball came.",
+            ],
+            "Real: Ghost and Light replay real matches (StatsBomb open data). Drawn: the other five, simulated.",
         ))
     }
 

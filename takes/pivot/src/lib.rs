@@ -60,6 +60,18 @@ impl Pivot {
 }
 
 impl Toy for Pivot {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "Time slows and waits while the ball is yours.",
+                "Pressers read where you look and lean that way, so a glance can sell a feint.",
+                "A presser you haven't looked at lately is only a ring where you last saw them.",
+            ],
+            "Drawn: all of it, a simulated rondo, not a real match.",
+        ))
+    }
+
     /// The info mark: a slow look from you, then a flick toward the most open teammate.
     fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
         use kit::info::{Demo, Stroke};

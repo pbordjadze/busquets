@@ -2,7 +2,7 @@
 
 The kit is now a git dependency: toy-kit 0.2.0 from
 [pbordjadze/terra-incognita](https://github.com/pbordjadze/terra-incognita) (`toys/crates/toy-kit`), pinned
-to commit `b888c41` (Cargo.toml; its info mark), without its globe (`default-features = false`; `web` in crates/web).
+to commit `cc0f56c` (Cargo.toml; its info and rules marks), without its globe (`default-features = false`; `web` in crates/web).
 It took in the modules this repository added (paint, backdrop, layer, sound, web, `check::main_with`), so
 nothing is vendored any more. `tools/sim_launch.sh` and the shell's info caption come from its
 `tools/toys/sim_launch.sh` and `toys/ios/Sources/main.swift`. What follows is the history of the copy it replaced.

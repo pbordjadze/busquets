@@ -252,7 +252,8 @@ impl Ghost {
 
     fn bar(&self, ctx: &Ctx) -> (f32, f32, f32) {
         let (w, h, ppp) = self.points(ctx);
-        (28.0 * ppp, w - 28.0 * ppp, h - 46.0 * ppp)
+        // (ending short of the kit's two marks, bottom right: the ⓘ and the rules)
+        (28.0 * ppp, w - 96.0 * ppp, h - 46.0 * ppp)
     }
 
     fn cam(&self, ctx: &Ctx, eye: V2) -> Cam {
@@ -322,6 +323,18 @@ impl Ghost {
 }
 
 impl Toy for Ghost {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "Solid: where the match data puts a player. Faint: where it is inferred.",
+                "Dots flashing on the grass: a real 360 freeze-frame, the truth underneath.",
+                "WHAT IF hands the moment to simulated players; the real ones go on as rings.",
+            ],
+            "Real: the events and 360 frames (StatsBomb open data). Drawn: the paths between them, and every what if.",
+        ))
+    }
+
     /// The info mark: a short scrub along the bottom, then a tap (through someone's eyes it rises
     /// above; from above, on a player, it goes into their eyes).
     fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
@@ -750,7 +763,7 @@ impl Toy for Ghost {
         }
         p.glow([x0 + (x1 - x0) * u, by], [x0 + (x1 - x0) * u, by], 4.0 * ppp, 8.0 * ppp, [1.0, 0.95, 0.85, 0.5]);
         p.disc([x0 + (x1 - x0) * u, by], 4.5 * ppp, 0.8 * ppp, [1.0, 0.97, 0.9, 1.0]);
-        write(p, "DATA: STATSBOMB OPEN DATA. FADED = INFERRED", [w * 0.5, by + 14.0 * ppp], 1.15 * ppp, [0.65, 0.7, 0.75, 0.55], true);
+        write(p, "DATA: STATSBOMB OPEN DATA. FADED = INFERRED", [(x0 + x1) * 0.5, by + 14.0 * ppp], 1.05 * ppp, [0.65, 0.7, 0.75, 0.55], true);
         p.render(&ctx.gpu, &mut enc, target, size, None);
         ctx.gpu.queue.submit([enc.finish()]);
     }

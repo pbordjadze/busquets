@@ -206,6 +206,18 @@ fn len(a: [f32; 2]) -> f32 {
 }
 
 impl Toy for Watch {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "Every player chases space and reads the passer on their own.",
+                "Your hand only sets each side's dials: press, risk, shape.",
+                "The grass leans toward whichever side has the ball.",
+            ],
+            "Drawn: all of it, the engine playing itself, eleven a side.",
+        ))
+    }
+
     /// The info mark: on the bottom side's half, a drag up (press) and one sideways (risk); then a pinch
     /// on the top side's half (shape).
     fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {

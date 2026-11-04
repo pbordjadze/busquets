@@ -9,8 +9,8 @@ Every screen has a small ⓘ bottom right (toy-kit's `info`, kit pinned at b888c
 fingertip taps the Pivot door, then swipes in from the left edge back home. Each take's `Toy::demo`
 plays its own gesture(s) with one line; the hub hands over the open take's (`Scene::demo`). The shell
 shows the line in system text (VoiceOver reads it) and now writes `toy-log.txt` to the app's
-Documents (Files › On My iPhone › Busquets). Known: Ghost's scrub bar ends under the ⓘ, so a touch
-that starts right on the mark opens the demo instead of scrubbing to the very end.
+Documents (Files › On My iPhone › Busquets). A "?" beside it (row 214, the kit's rules mark) shows each
+screen's few rules and what is real and what is drawn. Ghost's scrub bar ends short of both marks.
 
 
 - **The app.** `takes/busquets` is the one app, "Busquets" (a working title), `com.pbordjadze.busquets`,

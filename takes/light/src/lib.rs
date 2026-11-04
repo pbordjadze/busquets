@@ -197,6 +197,17 @@ impl Light {
 }
 
 impl Toy for Light {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "Each comet is one pass Sergio Busquets made; its trace stays.",
+                "Warm: forward. Pale: sideways. Cool: backward. An ember: it didn't arrive.",
+            ],
+            "Real: every pass (StatsBomb open data). Drawn: the light.",
+        ))
+    }
+
     /// The info mark: a finger held down hurries the passes.
     fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
         use kit::info::{Demo, Stroke};

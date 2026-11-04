@@ -77,6 +77,18 @@ fn hue(i: usize) -> [f32; 3] {
 }
 
 impl Toy for Pulse {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "Your team are stars, threaded to their nearest neighbours; pressers are dark fields.",
+                "Each pass is a note: its direction picks the note, its length the octave.",
+                "So a good run of passes is a melody.",
+            ],
+            "Drawn: all of it, Pivot's simulated rondo as light.",
+        ))
+    }
+
     /// The info mark: a slow look from you, then a flick toward the most open teammate.
     fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
         use kit::info::{Demo, Stroke};

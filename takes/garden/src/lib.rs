@@ -124,6 +124,17 @@ fn paint_stroke(p: &mut Painter, view: &View, st: &Stroke) {
 }
 
 impl Toy for Garden {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "Every pass leaves its line in ink: yours dark, the others' a wash.",
+                "Over time the ink shows the rondo's favourite lines, and where it was cut out.",
+            ],
+            "Drawn: all of it, a simulated rondo. The drawing is kept between visits.",
+        ))
+    }
+
     /// The info mark: a slow look from you, then a flick toward the most open teammate.
     fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
         use kit::info::{Demo, Stroke};

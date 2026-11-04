@@ -24,3 +24,9 @@ void toy_free(ToyShell *shell);
 bool toy_info_spot(ToyShell *shell, double *x, double *y);
 const char *toy_info_line(ToyShell *shell);
 void toy_info_open(ToyShell *shell, double t);
+// The rules mark beside it (info.rs's Rules): its place in points (false: none), the rules while they
+// show (lines, then a blank line and the note on what is measured and what is drawn; NULL otherwise;
+// valid until the next frame), and showing or hiding them (VoiceOver's activation, the panel's tap).
+bool toy_rules_spot(ToyShell *shell, double *x, double *y);
+const char *toy_rules_text(ToyShell *shell);
+void toy_rules_open(ToyShell *shell);

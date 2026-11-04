@@ -20,6 +20,17 @@ final class ToyView: UIView {
     let caption = UILabel()
     var captionText: String?
     lazy var infoElement = InfoElement(accessibilityContainer: self)
+    lazy var rulesElement = RulesElement(accessibilityContainer: self)
+    /// The rules (the rules mark's; toy-kit's info.rs › Rules) in the system's text: the toy's few
+    /// rules, then one dimmer line of what is measured and what is drawn, on a dark glass over the live
+    /// scene, above the marks. A tap anywhere closes it; it scrolls if the reader's text size needs.
+    /// tools/kit/shell_text.py draws the same for the Linux check's screenshots: change both together.
+    let rules = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterialDark))
+    let rulesScroll = UIScrollView()
+    let rulesLabel = UILabel()
+    var rulesText: String?
+    /// (TOY_OPEN=rules or info, set by tools/toys/sim_launch.sh: opens it once, TOY_OPEN_AFTER seconds in)
+    var openAt: (String, Double)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -40,6 +51,21 @@ final class ToyView: UIView {
         caption.alpha = 0
         caption.isUserInteractionEnabled = false
         addSubview(caption)
+        rules.layer.cornerRadius = 16
+        rules.layer.cornerCurve = .continuous
+        rules.clipsToBounds = true
+        // (a dark tint on the glass, so it stays dark over paper as over night)
+        rules.contentView.backgroundColor = UIColor(white: 0.06, alpha: 0.62)
+        rules.alpha = 0
+        rules.isHidden = true
+        rulesLabel.numberOfLines = 0
+        rulesLabel.isAccessibilityElement = true
+        rulesScroll.addSubview(rulesLabel)
+        rules.contentView.addSubview(rulesScroll)
+        rules.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(closeRules)))
+        addSubview(rules)
+        let env = ProcessInfo.processInfo.environment
+        if let what = env["TOY_OPEN"] { openAt = (what, CACurrentMediaTime() + (Double(env["TOY_OPEN_AFTER"] ?? "") ?? 8)) }
     }
     required init?(coder: NSCoder) { fatalError() }
 
@@ -147,13 +173,62 @@ final class ToyView: UIView {
             metal.drawableSize = CGSize(width: CGFloat(w), height: CGFloat(h))
             toy_resize(shell, w, h, Double(metal.contentsScale))
         }
+        if rulesText != nil { layoutRules() }
     }
 
     @objc func tick(_ link: CADisplayLink) {
         guard let shell else { return }
         toy_frame(shell, link.targetTimestamp)
         if toy_take_haptic(shell) { haptic.impactOccurred() }
+        if let o = openAt, CACurrentMediaTime() >= o.1 {
+            openAt = nil
+            if o.0 == "rules" { toy_rules_open(shell) } else { toy_info_open(shell, CACurrentMediaTime()) }
+        }
         showCaption(toy_info_line(shell).map { String(cString: $0) })
+        showRules(toy_rules_text(shell).map { String(cString: $0) })
+    }
+
+    @objc func closeRules() {
+        if let shell, rulesText != nil { toy_rules_open(shell) }
+    }
+
+    func showRules(_ text: String?) {
+        guard text != rulesText else { return }
+        rulesText = text
+        guard let text else {
+            UIView.animate(withDuration: 0.3, animations: { self.rules.alpha = 0 }) { _ in if self.rulesText == nil { self.rules.isHidden = true } }
+            UIAccessibility.post(notification: .layoutChanged, argument: nil)
+            return
+        }
+        let parts = text.components(separatedBy: "\n\n")
+        let body = UIFont.preferredFont(forTextStyle: .callout), note = UIFont.preferredFont(forTextStyle: .footnote)
+        let lines = NSMutableParagraphStyle()
+        lines.paragraphSpacing = 7
+        let noteStyle = NSMutableParagraphStyle()
+        noteStyle.paragraphSpacingBefore = 6
+        let s = NSMutableAttributedString(string: parts[0], attributes: [.font: body, .foregroundColor: UIColor(white: 1, alpha: 0.95), .paragraphStyle: lines])
+        if parts.count > 1 {
+            s.append(NSAttributedString(string: "\n" + parts[1...].joined(separator: "\n"), attributes: [.font: note, .foregroundColor: UIColor(white: 1, alpha: 0.64), .paragraphStyle: noteStyle]))
+        }
+        rulesLabel.attributedText = s
+        rulesLabel.accessibilityLabel = parts.joined(separator: ". ")
+        layoutRules()
+        rules.isHidden = false
+        UIView.animate(withDuration: 0.25) { self.rules.alpha = 1 }
+        UIAccessibility.post(notification: .screenChanged, argument: rulesLabel)
+    }
+
+    /// The panel's place: at most 480 points wide, centred, its foot 60 points above the screen's
+    /// (clear of the marks), as tall as its text up to the safe area's top.
+    func layoutRules() {
+        let w = min(bounds.width - 32, 480), pad = UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16)
+        let text = rulesLabel.sizeThatFits(CGSize(width: w - pad.left - pad.right, height: .greatestFiniteMagnitude))
+        let foot = bounds.height - 60
+        let h = min(text.height + pad.top + pad.bottom, foot - safeAreaInsets.top - 8)
+        rules.frame = CGRect(x: (bounds.width - w) / 2, y: foot - h, width: w, height: h)
+        rulesScroll.frame = rules.contentView.bounds.inset(by: pad)
+        rulesLabel.frame = CGRect(origin: .zero, size: CGSize(width: w - pad.left - pad.right, height: text.height))
+        rulesScroll.contentSize = rulesLabel.frame.size
     }
 
     func showCaption(_ text: String?) {
@@ -170,13 +245,23 @@ final class ToyView: UIView {
         }
     }
 
-    /// The mark, for VoiceOver: "About this app", activated to open its demo.
+    /// The marks, for VoiceOver: "About this app", activated to open its demo; "How it works", the
+    /// rules; and the rules' text while it shows.
     override var accessibilityElements: [Any]? {
         get {
             var x = 0.0, y = 0.0
-            guard let shell, toy_info_spot(shell, &x, &y) else { return [] }
-            infoElement.accessibilityFrameInContainerSpace = CGRect(x: x - 22, y: y - 22, width: 44, height: 44)
-            return [infoElement]
+            var out: [Any] = []
+            guard let shell else { return [] }
+            if rulesText != nil { out.append(rulesLabel) }
+            if toy_rules_spot(shell, &x, &y) {
+                rulesElement.accessibilityFrameInContainerSpace = CGRect(x: x - 22, y: y - 22, width: 44, height: 44)
+                out.append(rulesElement)
+            }
+            if toy_info_spot(shell, &x, &y) {
+                infoElement.accessibilityFrameInContainerSpace = CGRect(x: x - 22, y: y - 22, width: 44, height: 44)
+                out.append(infoElement)
+            }
+            return out
         }
         set {}
     }
@@ -216,6 +301,19 @@ final class InfoElement: UIAccessibilityElement {
     override func accessibilityActivate() -> Bool {
         guard let view = accessibilityContainer as? ToyView, let shell = view.shell else { return false }
         toy_info_open(shell, CACurrentMediaTime())
+        return true
+    }
+}
+
+final class RulesElement: UIAccessibilityElement {
+    override init(accessibilityContainer container: Any) {
+        super.init(accessibilityContainer: container)
+        accessibilityLabel = "How it works"
+        accessibilityTraits = .button
+    }
+    override func accessibilityActivate() -> Bool {
+        guard let view = accessibilityContainer as? ToyView, let shell = view.shell else { return false }
+        toy_rules_open(shell)
         return true
     }
 }
