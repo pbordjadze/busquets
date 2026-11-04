@@ -1,0 +1,59 @@
+{
+  "name": "Busquets sketches (CI builds)",
+  "identifier": "com.pbordjadze.busquets.source",
+  "subtitle": "Sketches of the pivot's loop: receive, scan, decide, release",
+  "iconURL": "https://raw.githubusercontent.com/pbordjadze/busquets/sidestore/busquets-icon.png",
+  "website": "https://github.com/pbordjadze/busquets",
+  "tintColor": "#E8C877",
+  "apps": [
+    {
+      "name": "Busquets",
+      "bundleIdentifier": "com.pbordjadze.busquets",
+      "developerName": "pbordjadze",
+      "subtitle": "Receive, scan, decide, release, at your own pace",
+      "localizedDescription": "Sketches of being the pivot, in one app. Tap a door: Iron Filings (you never touch the ball; your teammates snap round you and the pressers follow you), Lighthouse (the scan is a beam; your memory is the map) or The Hole (a real moment with him taken out; StatsBomb open data fetched at run time). Swipe in from the left edge to come back. Working title.",
+      "iconURL": "https://raw.githubusercontent.com/pbordjadze/busquets/sidestore/busquets-icon.png",
+      "tintColor": "#5CC77A",
+      "category": "games",
+      "versions": [
+        {
+          "version": "1.0.34",
+          "buildVersion": "34",
+          "date": "2026-11-04T23:10:15Z",
+          "localizedDescription": "[ipa] Busquets: the three new takes after four critic rounds; Pivot, Pulse, Garden, Light, Eyes, Ghost retired, Watch internal (painting-company row 223)",
+          "downloadURL": "https://github.com/pbordjadze/busquets/releases/download/busquets-build-34/busquets.ipa",
+          "size": 3945010,
+          "minOSVersion": "17.0"
+        },
+        {
+          "version": "1.0.29",
+          "buildVersion": "29",
+          "date": "2026-11-04T20:58:52Z",
+          "localizedDescription": "[ipa] Busquets: an \u24d8 and a ? on the home and in every take (painting-company rows 213, 214)",
+          "downloadURL": "https://github.com/pbordjadze/busquets/releases/download/busquets-build-29/busquets.ipa",
+          "size": 3987800,
+          "minOSVersion": "17.0"
+        },
+        {
+          "version": "1.0.21",
+          "buildVersion": "21",
+          "date": "2026-11-03T16:13:00Z",
+          "localizedDescription": "[ipa] Busquets: one app with every take inside, Ghost and Light fetching on the device",
+          "downloadURL": "https://github.com/pbordjadze/busquets/releases/download/busquets-build-21/busquets.ipa",
+          "size": 3960107,
+          "minOSVersion": "17.0"
+        }
+      ],
+      "version": "1.0.34",
+      "versionDate": "2026-11-04T23:10:15Z",
+      "versionDescription": "[ipa] Busquets: the three new takes after four critic rounds; Pivot, Pulse, Garden, Light, Eyes, Ghost retired, Watch internal (painting-company row 223)",
+      "downloadURL": "https://github.com/pbordjadze/busquets/releases/download/busquets-build-34/busquets.ipa",
+      "size": 3945010,
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {}
+      }
+    }
+  ],
+  "news": []
+}
