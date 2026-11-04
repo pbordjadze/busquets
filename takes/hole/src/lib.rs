@@ -38,7 +38,7 @@ const MOMENTS: [&str; 7] = [
 /// How near (m) counts as his pocket: the breath is fully out within about this.
 const NEAR: f32 = 7.0;
 /// The pitch width shown, m.
-const SHOWN: f32 = 44.0;
+const SHOWN: f32 = 52.0;
 
 const PITCH: &str = r#"
 fn sdbox(p: vec2<f32>, b: vec2<f32>) -> f32 {
@@ -171,6 +171,8 @@ pub struct Hole {
     /// Lifted: how long ago (s).
     shown: Option<f32>,
     exhale: f32,
+    /// After the answer the view eases toward him, so the teammates he linked are on screen.
+    pan: V2,
     rung: usize,
     fade: f32,
     time: f32,
@@ -193,7 +195,7 @@ impl Hole {
     }
     fn centre(&self) -> V2 {
         match &self.state {
-            State::Ready(ms) => ms[self.at].centre,
+            State::Ready(ms) => ms[self.at].centre + self.pan,
             _ => V2::ZERO,
         }
     }
@@ -220,6 +222,7 @@ impl Hole {
         self.exhale = 0.0;
         self.rung = 0;
         self.fade = 0.0;
+        self.pan = V2::ZERO;
     }
     fn retry(&mut self) {
         self.loader = Loader::new();
@@ -247,6 +250,7 @@ impl Toy for Hole {
             finger: None,
             shown: None,
             exhale: 0.0,
+            pan: V2::ZERO,
             rung: 0,
             fade: 0.0,
             time: 0.0,
@@ -355,6 +359,14 @@ impl Toy for Hole {
             _ => 0.0,
         };
         self.exhale += (want - self.exhale) * (1.0 - (-dt * 6.0).exp());
+        let to = if self.shown.is_some() {
+            let ls = links(m);
+            let mid = ls.iter().fold(m.him, |a, b| a + *b) * (1.0 / (ls.len() + 1) as f32);
+            mid - m.centre
+        } else {
+            V2::ZERO
+        };
+        self.pan = self.pan.lerp(to, 1.0 - (-dt * 2.5).exp());
         // rising notes as you come nearer (warmer), quiet as you go away
         if self.shown.is_none() && self.dot.is_some() {
             let steps = [0.2, 0.4, 0.6, 0.8, 0.93];
@@ -490,14 +502,14 @@ impl Toy for Hole {
                 let away = if me[0] <= him[0] { -1.0 } else { 1.0 };
                 let lw = real::dots::layout(&label).1 * cell;
                 let x = if away < 0.0 { me[0] - 16.0 * k - lw } else { me[0] + 16.0 * k };
-                write(p, &label, [x, me[1] - 3.5 * cell], cell, [1.0, 1.0, 1.0, 0.85 * r], false);
+                write(p, &label, [x, me[1] + 1.5 * s], cell * 0.85, [1.0, 1.0, 1.0, 0.85 * r], false);
             }
             // what he held together: an open line to each teammate within reach (no opponent on it)
             for q in links(m) {
                 p.glow(him, sc(q), 0.07 * s, 0.3 * s, [1.0, 0.85, 0.5, 0.55 * r]);
             }
             p.glow(him, him, 0.9 * s, 3.0 * s, [1.0, 0.92, 0.7, 0.35 * r]);
-            write(p, "HIM", [him[0], him[1] + 2.0 * s], cell * 0.8, [1.0, 0.97, 0.9, 0.9 * r], true);
+            write(p, "HIM", [him[0], him[1] - 2.2 * s - 7.0 * cell * 0.8], cell * 0.8, [1.0, 0.97, 0.9, 0.9 * r], true);
             p.disc(him, 0.8 * s, 0.12 * s, [1.0, 0.97, 0.9, r]);
             p.glow_ring(him, (0.9 + 3.0 * (1.0 - r)) * s, 0.08 * s, 0.2 * s, [1.0, 0.95, 0.8, 0.8 * r]);
             // the pass he played from there, again and again

@@ -19,7 +19,7 @@ use pitch::{v2, Ball, Config, Event, Kind, View, World, V2};
 /// on its own, rad/s.
 const BEAM: f32 = 0.6;
 const REACH: f32 = 34.0;
-const FADE: f32 = 5.0;
+const FADE: f32 = 3.0;
 const TURN: f32 = 1.05;
 
 const DARK: &str = r#"
@@ -37,7 +37,7 @@ fn backdrop(px: vec2<f32>, w: vec2<f32>) -> vec4<f32> {
   let stripe = select(0.0, 1.0, fract((px.y - u.p0.y) / (u.scale * 5.0) + 0.5) > 0.5);
   var grass = vec3<f32>(0.10, 0.20, 0.13) * (0.9 + 0.12 * stripe) * (0.85 + 0.2 * noise2(px * 0.08));
   var c = vec3<f32>(0.006, 0.01, 0.016) + vec3<f32>(0.006, 0.008, 0.014) * noise2(px * 0.004 + u.p1.z * 0.02);
-  c = mix(c, grass * 1.6, lit);
+  c = mix(c, grass * 1.05, lit);
   // a faint glow at your feet: the lamp
   c = c + vec3<f32>(0.18, 0.15, 0.09) * exp(-r / (u.scale * 2.2)) ;
   // time slowed: the dark goes a little blue
@@ -79,6 +79,9 @@ pub struct Lighthouse {
     /// The last pass was yours.
     mine: bool,
     ages: Vec<f32>,
+    /// Real seconds since the beam last lit each player (memory fades in your time, even while the
+    /// world holds for you).
+    unlit: Vec<f32>,
     flashes: Vec<(V2, f32, [f32; 3])>,
     trail: Vec<V2>,
     time: f32,
@@ -92,7 +95,7 @@ impl Lighthouse {
     }
     /// How bright your memory of player `i` is (1 while lit).
     fn memory(&self, i: usize) -> f32 {
-        (-self.world.players[i].seen_age / FADE).exp()
+        (-self.unlit[i] / FADE).exp()
     }
     /// The teammate your release would go to: the brightest you remember, the open lanes a little brighter.
     fn choice(&self) -> Option<usize> {
@@ -100,7 +103,8 @@ impl Lighthouse {
         lanes
             .iter()
             .map(|l| (l.to, self.memory(l.to) * (0.35 + 0.65 * l.seen.open)))
-            .filter(|x| x.1 > 0.04)
+            // never the teammate standing on the ball: a pass is a pass
+            .filter(|x| x.1 > 0.04 && self.world.players[x.0].pos.dist(self.world.ball_pos) > 5.0)
             .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
             .map(|x| x.0)
     }
@@ -140,6 +144,7 @@ impl Toy for Lighthouse {
             right: 0.0,
             mine: false,
             ages: vec![9.0; n],
+            unlit: vec![30.0; n],
             flashes: Vec::new(),
             trail: Vec::new(),
             time: 0.0,
@@ -214,6 +219,7 @@ impl Toy for Lighthouse {
                 }
             }
             self.ages[i] = age;
+            self.unlit[i] = if age == 0.0 { 0.0 } else { self.unlit[i] + dt };
         }
         for e in self.world.drain() {
             match e {
@@ -229,7 +235,7 @@ impl Toy for Lighthouse {
                         ctx.haptic();
                     }
                     let p = self.world.players[by].pos;
-                    self.flashes.push((p, 0.0, [1.0, 0.85, 0.55]));
+                    self.flashes.push((p, 0.0, [0.7, 0.75, 0.8]));
                     if grace > 0.7 {
                         self.bells.strike(Note { freq: pentatonic(440.0, (self.world.chain % 5) as i32), amp: 0.08 * grace, decay: 2.0, pan: 0.0, bright: 0.3 });
                     }
@@ -287,6 +293,7 @@ impl Toy for Lighthouse {
         let ys = view.to_screen(you);
         let pick = if w.yours() || w.incoming().is_some() { self.choice() } else { None };
         let mem: Vec<f32> = (0..w.players.len()).map(|i| self.memory(i)).collect();
+        let mem_dark = self.unlit.clone();
         let mut enc = ctx.gpu.device.create_command_encoder(&Default::default());
         self.dark.render(&ctx.gpu, &mut enc, target, size, &BackdropParams { time: self.time, scale: s, center: [0.0, 0.0], p: [ys[0], ys[1], self.beam, BEAM, REACH * s, self.slow, self.time, self.picture] });
         let p = &mut self.painter;
@@ -301,8 +308,10 @@ impl Toy for Lighthouse {
         // the release, while you hold: a thread to whom it will go
         if let Some(j) = pick {
             let q = sc(w.players[j].seen);
-            let k = 0.25 + 0.6 * self.slow;
-            p.glow(sc(w.ball_pos), q, 0.04 * s, 0.3 * s, [1.0, 0.9, 0.6, 0.25 * k]);
+            // warm if the lane looks open from what you remember, red if a remembered presser is on it
+            let open = w.lanes().iter().find(|l| l.to == j).map(|l| l.seen.open).unwrap_or(1.0);
+            let k = 0.35 + 0.6 * self.slow;
+            p.glow(sc(w.ball_pos), q, 0.05 * s, 0.3 * s, [1.0, 0.45 + 0.45 * open, 0.35 + 0.25 * open, 0.4 * k]);
         }
         for (i, pl) in w.players.iter().enumerate() {
             if i == 0 {
@@ -314,7 +323,7 @@ impl Toy for Lighthouse {
             let at = sc(if now { pl.pos } else { pl.seen });
             if pl.kind == Kind::Presser {
                 // pressers you are not lighting go back into the dark, quicker than your teammates
-                let a = if now { 1.0 } else { 0.6 * (-pl.seen_age / (FADE * 0.4)).exp() };
+                let a = if now { 1.0 } else { 0.6 * (-mem_dark[i] / 1.4).exp() };
                 if a < 0.02 {
                     continue;
                 }
@@ -327,7 +336,10 @@ impl Toy for Lighthouse {
                     p.glow(at, at, 0.55 * s, 0.1 * s, [1.0, 0.97, 0.88, 1.0]);
                 } else {
                     // remembered: a soft, cooling ghost of where you saw them
-                    let a = 0.12 + 0.5 * m;
+                    let a = 0.65 * m;
+                    if a < 0.03 {
+                        continue;
+                    }
                     p.glow(at, at, 0.45 * s, (0.3 + 0.6 * (1.0 - m)) * s, [0.85, 0.8, 0.7, a]);
                     p.glow_ring(at, 0.75 * s, 0.04 * s, 0.15 * s, [1.0, 0.9, 0.7, 0.4 * a]);
                 }

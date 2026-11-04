@@ -54,3 +54,10 @@ One line a round (what changed, what the critic said, what is next).
    surprise presser but the lights coming on when your pass lands, every remembered ghost beside the
    real player, a chord as full as your picture was right (a cut is now quiet); The Hole's reveal shows
    the teammates he linked (open lines from his spot), the value of the unflashy part.
+8. Nov 4 (row 223): critic rounds 3 and 4 (fresh each). The Hole first both times ("hand it over
+   tonight"); Filings second; Lighthouse third (memory never faded while time held; two targets).
+   Fixed: Lighthouse's memory fades in real time (truly dark), one target and never the teammate on
+   the ball, its lane red if a remembered presser is on it; Filings' pressers follow your run only
+   while you move, tethered, held outside your ring, and teammates read as players; The Hole's
+   reveal labels sit clear of the dots and the view eases to show the teammates he linked. Open:
+   Lighthouse still divides (most original, least fun in 30 s); the home's doors have no names.

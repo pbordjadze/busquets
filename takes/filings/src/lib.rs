@@ -21,7 +21,7 @@ use std::f32::consts::{PI, TAU};
 
 /// The ring's radius, m; the plate's width, m.
 const R: f32 = 7.5;
-const WIDE: f32 = 40.0;
+const WIDE: f32 = 34.0;
 
 const PLATE: &str = r#"
 fn streaks(d: vec2<f32>, k: f32, t: f32) -> f32 {
@@ -104,6 +104,9 @@ pub struct Filings {
     was_lit: [bool; 6],
     ripples: Vec<(V2, f32, [f32; 3], f32)>,
     hum: f32,
+    me_vel: V2,
+    /// How much each presser is being drawn by your run (0..1), for its tether.
+    drawn: [f32; 3],
     /// Clean passes in a row; six is the full circle.
     chain: u32,
     circle: f32,
@@ -214,6 +217,8 @@ impl Toy for Filings {
             was_lit: [false; 6],
             ripples: Vec::new(),
             hum: 0.0,
+            me_vel: V2::ZERO,
+            drawn: [0.0; 3],
             chain: 0,
             circle: 0.0,
             time: 0.0,
@@ -263,7 +268,10 @@ impl Toy for Filings {
         // the whole ring stays on the plate
         let m = R + 1.5;
         self.want = v2(self.want.x.clamp(-hx + m, hx - m), self.want.y.clamp(-hy + m, hy - m));
+        let was = self.me;
         self.me = self.me.lerp(self.want, 1.0 - (-dt * 16.0).exp());
+        let v = (self.me - was) * (1.0 / dt.max(1e-3));
+        self.me_vel = self.me_vel.lerp(v, 1.0 - (-dt * 6.0).exp());
         self.rot += dt * 0.04;
 
         // who holds which slot: the cheapest fit, kept unless another is clearly better
@@ -312,7 +320,10 @@ impl Toy for Filings {
             }
         }
         // keep the pressers out of the teammates and of you
-        for p in &mut self.pressers {
+        let ball_now = self.ball_pos;
+        let near_ball = (0..self.pressers.len()).min_by(|&a, &b| self.pressers[a].pos.dist(ball_now).partial_cmp(&self.pressers[b].pos.dist(ball_now)).unwrap()).unwrap_or(0);
+        let running = self.me_vel.len() > 1.5;
+        for (pi, p) in self.pressers.iter_mut().enumerate() {
             for m in self.mates.iter_mut() {
                 let a = p.pos - m.pos;
                 if a.len() < 1.3 && a.len() > 1e-4 {
@@ -320,12 +331,16 @@ impl Toy for Filings {
                     p.pos += push * 0.7;
                 }
             }
-            // you draw them, like a false 9: pressers near you are pulled toward you and off the
-            // edges the ball wants (but never onto you)
+            // you draw them, like a false 9: while you are on the move, the pressers not on the ball
+            // track your run, held just outside your ring, so they come off the edges the ball wants;
+            // stand still and they go back to cutting
             let a = p.pos - self.me;
             let d = a.len();
-            if d < 11.0 && d > 2.8 {
-                p.pos -= a.norm() * (3.4 * (1.0 - d / 11.0).sqrt()) * dt;
+            let drawn = running && pi != near_ball && d < 16.0;
+            self.drawn[pi] += ((if drawn { 1.0 } else { 0.0 }) - self.drawn[pi]) * (1.0 - (-dt * 5.0).exp());
+            if drawn && d > 1e-4 {
+                let spot = self.me + a.norm() * (R + 2.2);
+                p.pos = p.pos.lerp(spot, 1.0 - (-dt * 3.0).exp());
             }
             if d < 2.5 && d > 1e-4 {
                 p.pos += a.norm() * (2.5 - d);
@@ -492,7 +507,12 @@ impl Toy for Filings {
         let p = &mut self.painter;
 
         // the pressers: dark lumps, a rust rim
-        for q in &self.pressers {
+        for (qi, q) in self.pressers.iter().enumerate() {
+            // drawn by your run: a faint tether to you
+            let t = self.drawn[qi];
+            if t > 0.05 {
+                p.glow(sc(q.pos), sc(me), 0.04 * s, 0.3 * s, [1.0, 0.45, 0.3, 0.3 * t]);
+            }
             p.glow(sc(q.pos), sc(q.pos), 1.0 * s, 2.2 * s, [0.85, 0.22, 0.12, 0.28]);
             p.disc(sc(q.pos), 1.0 * s, 0.2 * s, [0.09, 0.03, 0.03, 1.0]);
             p.glow_ring(sc(q.pos), 1.05 * s, 0.1 * s, 0.25 * s, [0.95, 0.38, 0.25, 0.9]);
@@ -527,6 +547,7 @@ impl Toy for Filings {
             let dir = (m.pos - me).norm();
             let len = if m.snapped { 0.75 } else { 0.55 + 0.3 * (m.vel.len() / 13.0) };
             let (a, b) = (m.pos - dir * len, m.pos + dir * len);
+            p.disc(sc(m.pos), 0.95 * s, 0.25 * s, [0.55, 0.62, 0.72, 0.35]);
             p.glow(sc(a), sc(b), 0.32 * s, 0.6 * s, [0.75, 0.82, 0.92, 0.25 + 0.4 * m.flash]);
             p.glow(sc(a), sc(b), 0.2 * s, 0.08 * s, [0.88, 0.92, 0.98, 1.0]);
             if m.flash > 0.0 {
@@ -584,7 +605,7 @@ impl Toy for Filings {
         let from = [(a[0] / k) as f64, (a[1] / k) as f64];
         let [w, h] = ctx.points();
         let to = [if from[0] < w * 0.5 { w * 0.68 } else { w * 0.32 }, (from[1] + if from[1] < h * 0.5 { 150.0 } else { -150.0 }).clamp(140.0, h - 160.0)];
-        Some(Demo::new("Drag yourself: teammates snap to you, pressers follow you.", vec![Stroke::drag(0.4, 1.8, from, to)]))
+        Some(Demo::new("Keep moving: teammates snap to you, pressers follow your run.", vec![Stroke::drag(0.4, 1.8, from, to)]))
     }
 
     fn rules(&self) -> Option<Rules> {
@@ -592,7 +613,7 @@ impl Toy for Filings {
             &[
                 "You never touch the ball: it goes round your teammates on its own.",
                 "Wherever you go they snap into triangles round you, like filings to a magnet.",
-                "You draw the pressers too, like a false 9: go near one and it follows you off the edge it cuts (red).",
+                "Keep moving and the pressers follow your run, like a false 9's, off the edges they cut (red). Stand still and they come back.",
                 "Each pass strikes its triangle's note.",
                 "Six clean passes in a row make the full circle.",
             ],
