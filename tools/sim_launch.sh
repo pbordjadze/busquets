@@ -54,10 +54,12 @@ for i in $(seq 1 "$WAIT"); do
   # (a Simulator app is a process of the Mac's own: its executable's path names it)
   if ! pgrep -f "/$EXEC.app/$EXEC" > /dev/null; then alive=0; echo "gone after ${i} s"; break; fi
 done
+# the system's own account of the app's end (a crash, the watchdog, memory): the Simulator's log
+xcrun simctl spawn "$UDID" log show --last 3m --style compact --predicate "process == \"$EXEC\" OR (eventMessage CONTAINS[c] \"$BUNDLE\") OR (eventMessage CONTAINS[c] \"$EXEC\" AND (eventMessage CONTAINS[c] \"termin\" OR eventMessage CONTAINS[c] \"crash\" OR eventMessage CONTAINS[c] \"exit\" OR eventMessage CONTAINS[c] \"kill\"))" > "$OUT/system-log.txt" 2>&1 || true
 xcrun simctl io "$UDID" screenshot "$OUT/screen.png" > /dev/null 2>&1 || true
 DATA="$(xcrun simctl get_app_container "$UDID" "$BUNDLE" data 2> /dev/null || true)"
 [ -n "$DATA" ] && cp "$DATA/Documents/toy-log.txt" "$OUT/toy-log.txt" 2> /dev/null || true
-ls -t ~/Library/Logs/DiagnosticReports 2> /dev/null | grep "$EXEC" | head -n $(( $(ls ~/Library/Logs/DiagnosticReports 2> /dev/null | grep -c "$EXEC" || true) - before )) |
+ls -t ~/Library/Logs/DiagnosticReports 2> /dev/null | grep "$EXEC" | head -n $(( $(ls ~/Library/Logs/DiagnosticReports 2> /dev/null | grep -c "$EXEC" || true) - before + 0 )) 2> /dev/null |
   while read -r f; do cp ~/Library/Logs/DiagnosticReports/"$f" "$OUT/"; echo "crash report: $f"; done || true
 xcrun simctl terminate "$UDID" "$BUNDLE" 2> /dev/null || true
 echo "== toy-log.txt"; cat "$OUT/toy-log.txt" 2> /dev/null || echo "(none)"
@@ -65,6 +67,7 @@ echo "== toy-log.txt"; cat "$OUT/toy-log.txt" 2> /dev/null || echo "(none)"
 if grep -q "gpu: " "$OUT/toy-log.txt" 2> /dev/null && grep -q -E "gpu: .*(Error|error|lost)" "$OUT/toy-log.txt"; then
   echo "FAIL  $TOY logged a GPU error in the Simulator (toy-log.txt above)"; gpu_error=1
 fi
+echo "== the system log about it (last 60 lines)"; grep -v -i "accessib" "$OUT/system-log.txt" | tail -60 || true
 echo "== stderr (last 40 lines)"; tail -40 "$OUT/stderr.txt" 2> /dev/null || true
 if [ "${gpu_error:-0}" = 1 ]; then
   exit 1
