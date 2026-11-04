@@ -60,6 +60,13 @@ impl Pivot {
 }
 
 impl Toy for Pivot {
+    /// The info mark: a slow look from you, then a flick toward the most open teammate.
+    fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
+        use kit::info::{Demo, Stroke};
+        let (look, flick) = pitch::demo_look_pass(&self.world, &self.view(ctx), ctx.ppp as f32);
+        Some(Demo::new("Glance before it arrives. The brighter lane is the open one.", vec![Stroke::drag(0.4, 1.0, look[0], look[1]), Stroke::drag(2.0, 0.2, flick[0], flick[1])]))
+    }
+
     fn new(ctx: &mut Ctx) -> anyhow::Result<Self> {
         let world = World::new(Config::default());
         let bells = Bells::new();

@@ -124,6 +124,13 @@ fn paint_stroke(p: &mut Painter, view: &View, st: &Stroke) {
 }
 
 impl Toy for Garden {
+    /// The info mark: a slow look from you, then a flick toward the most open teammate.
+    fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
+        use kit::info::{Demo, Stroke};
+        let (look, flick) = pitch::demo_look_pass(&self.world, &self.view(ctx), ctx.ppp as f32);
+        Some(Demo::new("Your passes are the dark ink. The garden keeps the drawing.", vec![Stroke::drag(0.4, 1.0, look[0], look[1]), Stroke::drag(2.0, 0.2, flick[0], flick[1])]))
+    }
+
     fn new(ctx: &mut Ctx) -> anyhow::Result<Self> {
         let world = World::new(config());
         let bells = Bells::new();

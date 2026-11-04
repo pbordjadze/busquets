@@ -77,6 +77,13 @@ fn hue(i: usize) -> [f32; 3] {
 }
 
 impl Toy for Pulse {
+    /// The info mark: a slow look from you, then a flick toward the most open teammate.
+    fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
+        use kit::info::{Demo, Stroke};
+        let (look, flick) = pitch::demo_look_pass(&self.world, &self.view(ctx), ctx.ppp as f32);
+        Some(Demo::new("Keep the light away from the dark. Every pass is a note.", vec![Stroke::drag(0.4, 1.0, look[0], look[1]), Stroke::drag(2.0, 0.2, flick[0], flick[1])]))
+    }
+
     fn new(ctx: &mut Ctx) -> anyhow::Result<Self> {
         let world = World::new(config());
         let bells = Bells::new();

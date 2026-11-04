@@ -14,5 +14,5 @@ pub mod world;
 pub use gesture::{Gesture, Gestures};
 pub use lane::{openness, LaneParams, Openness};
 pub use v2::{v2, V2};
-pub use view::{drive, pace_of, Touch, View};
+pub use view::{demo_look_pass, drive, pace_of, Touch, View};
 pub use world::{Ball, Config, Event, Fate, Kind, Lane, Outcome, Player, Spec, Traits, World};

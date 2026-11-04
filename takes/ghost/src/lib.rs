@@ -322,6 +322,41 @@ impl Ghost {
 }
 
 impl Toy for Ghost {
+    /// The info mark: a short scrub along the bottom, then a tap (through someone's eyes it rises
+    /// above; from above, on a player, it goes into their eyes).
+    fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
+        use kit::info::{Demo, Stroke};
+        let (w, h, ppp) = self.points(ctx);
+        let (x0, x1, by) = self.bar(ctx);
+        let pt = |p: [f32; 2]| [(p[0] / ppp) as f64, (p[1] / ppp) as f64];
+        let mut tap = [w * 0.5, h * 0.45];
+        let end = match &self.state {
+            State::Ready(l) => {
+                if self.pov.is_none() {
+                    let c = [w * 0.5, h * 0.5];
+                    let near = l.game.people.iter().enumerate().filter(|(_, p)| p.playing(self.t)).map(|(i, _)| {
+                        let at = self.sim_pos(i).unwrap_or_else(|| l.tracks.pos_at(i, self.t));
+                        self.to_screen(ctx, at)
+                    });
+                    if let Some(s) = near.min_by(|a, b| (a[0] - c[0]).hypot(a[1] - c[1]).partial_cmp(&(b[0] - c[0]).hypot(b[1] - c[1])).unwrap()) {
+                        tap = s;
+                    }
+                }
+                l.game.end
+            }
+            _ => 1.0,
+        };
+        // a minute on: enough to see time move, not to lose the moment
+        let u = (self.t / end.max(1.0)).clamp(0.0, 0.9);
+        let du = (60.0 / end.max(60.0)).max(0.03);
+        let from = [x0 + (x1 - x0) * u, by];
+        let to = [x0 + (x1 - x0) * (u + du), by];
+        Some(Demo::new(
+            "A real match, rebuilt. WHAT IF changes one thing and lets it play on.",
+            vec![Stroke::drag(0.4, 1.2, pt(from), pt(to)), Stroke::tap(2.4, pt(tap))],
+        ))
+    }
+
     fn new(ctx: &mut Ctx) -> anyhow::Result<Ghost> {
         let loader = Loader::new();
         loader.ask(&format!("events/{MATCH}.json"));

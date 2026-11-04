@@ -197,6 +197,13 @@ impl Light {
 }
 
 impl Toy for Light {
+    /// The info mark: a finger held down hurries the passes.
+    fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
+        use kit::info::{Demo, Stroke};
+        let [w, h] = ctx.points();
+        Some(Demo::new("Every pass Sergio Busquets made in the open data, as light.", vec![Stroke::hold(0.4, 2.2, [w * 0.5, h * 0.5])]))
+    }
+
     fn new(ctx: &mut Ctx) -> anyhow::Result<Light> {
         let loader = Loader::new();
         loader.ask(&format!("events/{}.json", MATCHES[0].0));
