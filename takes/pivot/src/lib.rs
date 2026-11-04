@@ -60,6 +60,25 @@ impl Pivot {
 }
 
 impl Toy for Pivot {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "Time slows and waits while the ball is yours.",
+                "Pressers read where you look and lean that way, so a glance can sell a feint.",
+                "A presser you haven't looked at lately is only a ring where you last saw them.",
+            ],
+            "Drawn: all of it, a simulated rondo, not a real match.",
+        ))
+    }
+
+    /// The info mark: a slow look from you, then a flick toward the most open teammate.
+    fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
+        use kit::info::{Demo, Stroke};
+        let (look, flick) = pitch::demo_look_pass(&self.world, &self.view(ctx), ctx.ppp as f32);
+        Some(Demo::new("Glance before it arrives. The brighter lane is the open one.", vec![Stroke::drag(0.4, 1.0, look[0], look[1]), Stroke::drag(2.0, 0.2, flick[0], flick[1])]))
+    }
+
     fn new(ctx: &mut Ctx) -> anyhow::Result<Self> {
         let world = World::new(Config::default());
         let bells = Bells::new();

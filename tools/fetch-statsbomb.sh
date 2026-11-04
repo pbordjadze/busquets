@@ -17,7 +17,7 @@ if [ ${#ids[@]} -eq 0 ]; then ids=(3794686 3795220 3857291 3773585 3773597 38692
 if [ "${ids[0]}" = "--busquets" ]; then
   ids=()
   for cs in 55/43 43/106 11/90; do
-    curl -fsSL "$BASE/matches/$cs.json" -o "$OUT/matches/${cs/\//_}.json"
+    curl -fsSL --retry 4 --retry-all-errors --retry-delay 5 "$BASE/matches/$cs.json" -o "$OUT/matches/${cs/\//_}.json"
   done
   mapfile -t ids < <(python3 -I - "$OUT/matches" <<'PY'
 import json, glob, sys
@@ -29,7 +29,7 @@ PY
 )
 fi
 for id in "${ids[@]}"; do
-  [ -s "$OUT/events/$id.json" ] || curl -fsSL "$BASE/events/$id.json" -o "$OUT/events/$id.json"
-  [ -s "$OUT/three-sixty/$id.json" ] || curl -fsSL "$BASE/three-sixty/$id.json" -o "$OUT/three-sixty/$id.json" || rm -f "$OUT/three-sixty/$id.json"
+  [ -s "$OUT/events/$id.json" ] || curl -fsSL --retry 4 --retry-all-errors --retry-delay 5 "$BASE/events/$id.json" -o "$OUT/events/$id.json"
+  [ -s "$OUT/three-sixty/$id.json" ] || curl -fsSL --retry 4 --retry-all-errors --retry-delay 5 "$BASE/three-sixty/$id.json" -o "$OUT/three-sixty/$id.json" || rm -f "$OUT/three-sixty/$id.json"
 done
 echo "statsbomb: ${#ids[@]} matches in $OUT"

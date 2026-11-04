@@ -1,0 +1,38 @@
+{
+ "_": "The home's rules mark (toy-kit info.rs Rules): a tap shows what every door shares and what is real; a tap anywhere closes it.",
+ "size": [
+  1179,
+  2556
+ ],
+ "ppp": 3,
+ "seconds": 5,
+ "fps": 20,
+ "events": [
+  {
+   "t": 1.0,
+   "tap": "rules"
+  },
+  {
+   "t": 3.5,
+   "tap": [
+    196,
+    700
+   ],
+   "inert": true
+  }
+ ],
+ "shots": [
+  {
+   "t": 0.9,
+   "name": "marks"
+  },
+  {
+   "t": 1.6,
+   "name": "rules"
+  },
+  {
+   "t": 4.2,
+   "name": "closed"
+  }
+ ]
+}

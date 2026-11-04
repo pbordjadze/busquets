@@ -4,6 +4,7 @@
 #include <stddef.h>
 typedef struct ToyShell ToyShell;
 typedef struct ToySynth ToySynth;
+void toy_set_log(const char *path);
 ToyShell *toy_new(void *layer, uint32_t width, uint32_t height, double scale, const char *assets);
 void toy_resize(ToyShell *shell, uint32_t width, uint32_t height, double scale);
 void toy_frame(ToyShell *shell, double t);
@@ -18,3 +19,14 @@ ToySynth *toy_synth(ToyShell *shell);
 void toy_audio(ToySynth *synth, float *out, uint32_t frames, uint32_t channels, double rate);
 void toy_synth_free(ToySynth *synth);
 void toy_free(ToyShell *shell);
+// The info mark (toy-kit's info.rs): its place in points (false: the toy has none), its line while its
+// demo shows (NULL otherwise; valid until the next frame), and opening it (VoiceOver's activation).
+bool toy_info_spot(ToyShell *shell, double *x, double *y);
+const char *toy_info_line(ToyShell *shell);
+void toy_info_open(ToyShell *shell, double t);
+// The rules mark beside it (info.rs's Rules): its place in points (false: none), the rules while they
+// show (lines, then a blank line and the note on what is measured and what is drawn; NULL otherwise;
+// valid until the next frame), and showing or hiding them (VoiceOver's activation, the panel's tap).
+bool toy_rules_spot(ToyShell *shell, double *x, double *y);
+const char *toy_rules_text(ToyShell *shell);
+void toy_rules_open(ToyShell *shell);

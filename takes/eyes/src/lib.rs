@@ -229,6 +229,29 @@ fn ground_ring(p: &mut Painter, cam: &Cam, at: V2, r: f32, width: f32, color: [f
 }
 
 impl Toy for Eyes {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "You see only where you face; behind you, players are where you last looked.",
+                "The pressers you can see lean the way they read you.",
+                "While you hold the ball, the light closes in.",
+            ],
+            "Drawn: all of it, Pivot's simulated rondo over your shoulder.",
+        ))
+    }
+
+    /// The info mark: a look over the shoulder, then a flick up the view.
+    fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
+        use kit::info::{Demo, Stroke};
+        let [w, h] = ctx.points();
+        let (x, y) = (w * 0.5, h * 0.72);
+        Some(Demo::new(
+            "Behind you, a presser is only where you last saw him.",
+            vec![Stroke::drag(0.4, 1.1, [x + 70.0, y], [x - 70.0, y]), Stroke::drag(2.2, 0.12, [x, y], [x, y - 120.0])],
+        ))
+    }
+
     fn new(ctx: &mut Ctx) -> anyhow::Result<Self> {
         let world = World::new(Config::default());
         let bells = Bells::new();

@@ -7,7 +7,8 @@ name: CI
 #   ipa     macOS, one job building the one app (takes/busquets, every take inside it) (the five macOS runners are shared with every app: one
 #           IPA run a round, and look at the queue first). Only when asked: a push whose first line
 #           carries `[ipa]`, or a run started by hand with `ipa`. On main each take is released as
-#           `<take>-build-<n>` (the five newest kept); elsewhere the IPAs are the `ipa` artifact.
+#           `<take>-build-<n>` (the five newest kept); elsewhere the IPAs are the `ipa` artifact. Before the
+#           release the app is opened in the iOS Simulator with Metal's validation on (tools/sim_launch.sh).
 #   publish on main after a release: the SideStore source regenerated on the `sidestore` branch
 #           (ci/sidestore_publish.sh); add https://raw.githubusercontent.com/pbordjadze/busquets/sidestore/source.json
 
@@ -53,7 +54,7 @@ jobs:
       - name: Play every plan
         run: |
           # ghost and light read real matches: StatsBomb open data, fetched here, never committed (NOTICE.md)
-          if [ "${{ matrix.take }}" = ghost ] || [ "${{ matrix.take }}" = light ]; then bash tools/fetch-statsbomb.sh; fi
+          if [ "${{ matrix.take }}" = ghost ] || [ "${{ matrix.take }}" = light ] || [ "${{ matrix.take }}" = busquets ]; then bash tools/fetch-statsbomb.sh; fi
           mkdir -p build/out
           for p in takes/${{ matrix.take }}/plans/*.json; do
             n=$(basename "$p" .json)
@@ -96,7 +97,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
-        with: { targets: aarch64-apple-ios }
+        with: { targets: 'aarch64-apple-ios,aarch64-apple-ios-sim' }
       - uses: Swatinem/rust-cache@v2
         with: { key: ios }
       - name: Build the IPAs
@@ -106,6 +107,8 @@ jobs:
             BUILD="$BUILD" bash ios/build.sh $take out 2>&1 | tee out/$take-build.log | tail -20
             ls -l out/$take.ipa
           done
+      - name: Open it in the Simulator (Apple's Metal compiler, Metal's validation on)
+        run: bash tools/sim_launch.sh busquets out/sim
       - name: Release
         if: github.ref_name == 'main'
         env:

@@ -1,0 +1,54 @@
+{
+ "_": "The home's info mark (toy-kit info.rs): tapped, a fingertip opens a door and swipes back in from the left edge; a tap closes it.",
+ "size": [
+  1179,
+  2556
+ ],
+ "ppp": 3,
+ "seconds": 9,
+ "fps": 20,
+ "events": [
+  {
+   "t": 1.0,
+   "tap": "info"
+  },
+  {
+   "t": 8.0,
+   "tap": [
+    196,
+    700
+   ],
+   "inert": true
+  }
+ ],
+ "shots": [
+  {
+   "t": 0.9,
+   "name": "mark"
+  },
+  {
+   "t": 1.55,
+   "name": "ghost-tap"
+  },
+  {
+   "t": 2.6,
+   "name": "in"
+  },
+  {
+   "t": 3.75,
+   "name": "edge-start"
+  },
+  {
+   "t": 3.85,
+   "name": "edge"
+  },
+  {
+   "t": 4.6,
+   "name": "home"
+  },
+  {
+   "t": 8.5,
+   "name": "closed"
+  }
+ ]
+}

@@ -3,7 +3,15 @@
 The ask is painting-company row 207. ROUNDS.md has the rounds, README.md the engine and the touch
 grammar, NOTICE.md the sources.
 
-## Where it stands
+## Nov 4: the info marks (row 213)
+
+Every screen has a small ⓘ bottom right (toy-kit's `info`, kit pinned at b888c41). Home's demo: a
+fingertip taps the Pivot door, then swipes in from the left edge back home. Each take's `Toy::demo`
+plays its own gesture(s) with one line; the hub hands over the open take's (`Scene::demo`). The shell
+shows the line in system text (VoiceOver reads it) and now writes `toy-log.txt` to the app's
+Documents (Files › On My iPhone › Busquets). A "?" beside it (row 214, the kit's rules mark) shows each
+screen's few rules and what is real and what is drawn. Ghost's scrub bar ends short of both marks.
+
 
 - **The app.** `takes/busquets` is the one app, "Busquets" (a working title), `com.pbordjadze.busquets`,
   build 21 in this repository's SideStore source

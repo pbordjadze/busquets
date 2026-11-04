@@ -206,6 +206,31 @@ fn len(a: [f32; 2]) -> f32 {
 }
 
 impl Toy for Watch {
+    /// The rules mark: the few rules that make the scene, and what is real and what is drawn.
+    fn rules(&self) -> Option<kit::info::Rules> {
+        Some(kit::info::Rules::new(
+            &[
+                "Every player chases space and reads the passer on their own.",
+                "Your hand only sets each side's dials: press, risk, shape.",
+                "The grass leans toward whichever side has the ball.",
+            ],
+            "Drawn: all of it, the engine playing itself, eleven a side.",
+        ))
+    }
+
+    /// The info mark: on the bottom side's half, a drag up (press) and one sideways (risk); then a pinch
+    /// on the top side's half (shape).
+    fn demo(&self, ctx: &Ctx) -> Option<kit::info::Demo> {
+        use kit::info::{Demo, Stroke};
+        let [w, h] = ctx.points();
+        let mut strokes = vec![
+            Stroke::drag(0.4, 0.9, [w * 0.5, h * 0.82], [w * 0.5, h * 0.64]),
+            Stroke::drag(1.7, 0.9, [w * 0.3, h * 0.72], [w * 0.75, h * 0.72]),
+        ];
+        strokes.extend(Demo::two_fingers(3.0, 1.0, [w * 0.5, h * 0.25], 40.0, 0.0, 1.8));
+        Some(Demo::new("Each half is one team. Tap with two fingers for the rondo.", strokes))
+    }
+
     fn new(ctx: &mut Ctx) -> anyhow::Result<Self> {
         let world = World::new(Config::eleven());
         let bells = Bells::new();

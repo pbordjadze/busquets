@@ -9,6 +9,7 @@
 //! one app's pointer, frame, sound, shake and saved state go to whichever take is open.
 
 use kit::backdrop::{Backdrop, BackdropParams};
+use kit::info::{Demo, Rules, Stroke};
 use kit::paint::Painter;
 use kit::sound::{Bells, Note};
 use kit::{Ctx, Phase, PointerEvent, SharedSynth, Synth, Toy};
@@ -24,6 +25,8 @@ trait Scene {
     fn shaken(&mut self, ctx: &mut Ctx);
     fn settings(&mut self, ctx: &mut Ctx);
     fn save(&self) -> Option<String>;
+    fn demo(&self, ctx: &Ctx) -> Option<Demo>;
+    fn rules(&self) -> Option<Rules>;
 }
 
 /// A take as a scene.
@@ -50,6 +53,12 @@ impl<T: Toy> Scene for Take<T> {
     }
     fn save(&self) -> Option<String> {
         Toy::save(&self.0)
+    }
+    fn demo(&self, ctx: &Ctx) -> Option<Demo> {
+        Toy::demo(&self.0, ctx)
+    }
+    fn rules(&self) -> Option<Rules> {
+        Toy::rules(&self.0)
     }
 }
 
@@ -356,6 +365,36 @@ impl Toy for Busquets {
         p.glow(q, q, 0.8 * s, 0.25 * s, [1.0, 1.0, 1.0, self.fade]);
         p.render(&ctx.gpu, &mut enc, target, size, None);
         ctx.gpu.queue.submit([enc.finish()]);
+    }
+
+    /// The info mark: at home, a fingertip opens a door and swipes back in from the left edge; in a
+    /// take, that take's own gesture.
+    fn demo(&self, ctx: &Ctx) -> Option<Demo> {
+        if let Some(i) = self.open {
+            return self.scenes[i].as_ref().and_then(|(s, _)| s.demo(ctx));
+        }
+        let k = ctx.ppp as f32;
+        let d = self.door_at(ctx, 0);
+        let door = [(d[0] / k) as f64, (d[1] / k) as f64];
+        let [w, h] = ctx.points();
+        Some(Demo::new(
+            "Seven ways to play Busquets' job: the ball comes, you look, you pass.",
+            vec![Stroke::tap(0.5, door), Stroke::drag(2.6, 0.7, [4.0, h * 0.55], [w * 0.55, h * 0.55])],
+        ))
+    }
+
+    /// The rules mark: at home, what every door shares; in a take, that take's own.
+    fn rules(&self) -> Option<Rules> {
+        if let Some(i) = self.open {
+            return self.scenes[i].as_ref().and_then(|(s, _)| s.rules());
+        }
+        Some(Rules::new(
+            &[
+                "Behind every door, the same football: players who chase space and read the passer.",
+                "A pass is only as good as what was seen before the ball came.",
+            ],
+            "Real: Ghost and Light replay real matches (StatsBomb open data). Drawn: the other five, simulated.",
+        ))
     }
 
     fn synth(&mut self) -> Option<Box<dyn Synth>> {

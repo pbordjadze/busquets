@@ -957,7 +957,7 @@ dependencies = [
 [[package]]
 name = "toy-kit"
 version = "0.2.0"
-source = "git+https://github.com/pbordjadze/terra-incognita?rev=85b00e81298a1bd3014e29ca5d9b1cbe80675a25#85b00e81298a1bd3014e29ca5d9b1cbe80675a25"
+source = "git+https://github.com/pbordjadze/terra-incognita?rev=cc0f56c2d8e07542c059c0bacbbbd7580e28d51a#cc0f56c2d8e07542c059c0bacbbbd7580e28d51a"
 dependencies = [
  "anyhow",
  "bytemuck",

@@ -106,3 +106,29 @@ pub fn drive(world: &mut World, g: &mut Gestures, view: &View, ppp: f32, id: u64
         None => Touch::Nothing,
     }
 }
+
+/// The info mark's gesture for a take seen from above (Pivot, Pulse, Garden), in screen points: a slow
+/// look sideways from you, then a quick flick toward the teammate most open now. Each is a
+/// (from, to) pair; the look is slow enough never to pass, the flick fast enough to (a pass when the
+/// ball is yours or coming, otherwise a glance that way).
+pub fn demo_look_pass(world: &World, view: &View, ppp: f32) -> ([[f64; 2]; 2], [[f64; 2]; 2]) {
+    let pts = |p: [f32; 2]| [(p[0] / ppp) as f64, (p[1] / ppp) as f64];
+    let (w, h) = ((view.size[0] / ppp) as f64, (view.size[1] / ppp) as f64);
+    let you = world.cfg.human.map(|h| world.players[h].pos).unwrap_or(V2::ZERO);
+    let at = pts(view.to_screen(you));
+    let at = [at[0].clamp(80.0, w - 80.0), at[1].clamp(120.0, h - 160.0)];
+    let best = world.lanes().into_iter().max_by(|a, b| a.truly.open.partial_cmp(&b.truly.open).unwrap());
+    let dir = match best {
+        Some(l) => {
+            let (a, b) = (view.to_screen(l.a), view.to_screen(l.b));
+            let (dx, dy) = ((b[0] - a[0]) as f64, (b[1] - a[1]) as f64);
+            let n = dx.hypot(dy).max(1e-3);
+            [dx / n, dy / n]
+        }
+        None => [0.0, -1.0],
+    };
+    let side = [-dir[1], dir[0]];
+    let look = [at, [at[0] + side[0] * 70.0, at[1] + side[1] * 70.0]];
+    let flick = [at, [at[0] + dir[0] * 170.0, at[1] + dir[1] * 170.0]];
+    (look, flick)
+}
