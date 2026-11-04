@@ -1,0 +1,25 @@
+[package]
+name = "lighthouse"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Lighthouse (a working title): a dark pitch, your scan a turning beam; what it lit fades like memory; hold to slow time and steer it, lift and the ball goes to the brightest teammate you remember."
+
+[lib]
+crate-type = ["lib", "staticlib"]
+
+[dependencies]
+kit = { workspace = true }
+pitch = { workspace = true }
+wgpu = { workspace = true }
+anyhow = { workspace = true }
+
+[[bin]]
+name = "lighthouse-check"
+path = "src/bin/check.rs"
+
+[features]
+# the take as its own app (its C ABI); the one app (takes/busquets) turns it off to hold every take
+default = ["app"]
+app = []

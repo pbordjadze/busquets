@@ -1,0 +1,53 @@
+{
+ "_": "Iron Filings's info mark, inside the one app: its door, then the mark, its fingertip on the live scene.",
+ "size": [
+  1179,
+  2556
+ ],
+ "ppp": 3,
+ "seconds": 10.0,
+ "fps": 20,
+ "events": [
+  {
+   "t": 1.0,
+   "tap": [
+    197,
+    281
+   ]
+  },
+  {
+   "t": 3.0,
+   "tap": "info"
+  }
+ ],
+ "shots": [
+  {
+   "t": 2.9,
+   "name": "mark"
+  },
+  {
+   "t": 3.9,
+   "name": "look"
+  },
+  {
+   "t": 4.6,
+   "name": "mid"
+  },
+  {
+   "t": 5.12,
+   "name": "flick"
+  },
+  {
+   "t": 5.35,
+   "name": "after"
+  },
+  {
+   "t": 5.6,
+   "name": "gesture"
+  },
+  {
+   "t": 6.6,
+   "name": "answer"
+  }
+ ]
+}

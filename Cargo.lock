@@ -86,9 +86,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "eyes",
+ "filings",
  "garden",
  "ghost",
+ "hole",
  "light",
+ "lighthouse",
  "log",
  "pitch",
  "pivot",
@@ -104,9 +107,12 @@ name = "busquets-web"
 version = "0.1.0"
 dependencies = [
  "eyes",
+ "filings",
  "garden",
  "ghost",
+ "hole",
  "light",
+ "lighthouse",
  "pivot",
  "pulse",
  "studies",
@@ -249,6 +255,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e6853b52649d4ac5c0bd02320cddc5ba956bdb407c4b75a2c6b75bf51500f8c"
 dependencies = [
  "simd-adler32",
+]
+
+[[package]]
+name = "filings"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "pitch",
+ "toy-kit",
+ "wgpu",
 ]
 
 [[package]]
@@ -417,6 +433,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
 
 [[package]]
+name = "hole"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "pitch",
+ "real",
+ "serde",
+ "serde_json",
+ "toy-kit",
+ "wgpu",
+]
+
+[[package]]
 name = "image"
 version = "0.25.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -489,6 +518,16 @@ dependencies = [
  "real",
  "serde",
  "serde_json",
+ "toy-kit",
+ "wgpu",
+]
+
+[[package]]
+name = "lighthouse"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "pitch",
  "toy-kit",
  "wgpu",
 ]

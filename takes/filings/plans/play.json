@@ -1,0 +1,11 @@
+{ "_": "Iron Filings: a still start, then you dragged round the plate; the ring follows and the ball keeps going.",
+  "size": [1179, 2556], "ppp": 3, "seconds": 24, "fps": 30,
+  "events": [
+    { "t": 4.0, "drag": [[196, 450], [120, 300]], "for": 1.5 },
+    { "t": 8.0, "drag": [[150, 300], [260, 560]], "for": 2.0 },
+    { "t": 13.0, "drag": [[260, 560], [200, 420]], "for": 0.6 },
+    { "t": 17.0, "drag": [[200, 420], [110, 650]], "for": 1.2 }
+  ],
+  "shots": [1.0, 3.5, 4.8, 6.5, 9.0, 11.5, 14.0, 18.0, 23.5],
+  "film": { "from": 0, "to": 24, "every": 0.2 },
+  "audio": true }

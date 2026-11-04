@@ -1,0 +1,13 @@
+{ "_": "Lighthouse: the beam turning on its own, then thumbs held (time slows, the beam follows) and lifted (the ball goes to the brightest teammate remembered).",
+  "size": [1179, 2556], "ppp": 3, "seconds": 26, "fps": 30,
+  "events": [
+    { "t": 3.0, "drag": [[300, 500], [120, 300]], "for": 2.0 },
+    { "t": 7.0, "tap": [200, 600] },
+    { "t": 10.0, "drag": [[90, 420], [300, 380]], "for": 2.5 },
+    { "t": 15.0, "drag": [[200, 250], [200, 650]], "for": 1.5 },
+    { "t": 19.0, "tap": [100, 500] },
+    { "t": 22.0, "drag": [[320, 420], [80, 420]], "for": 2.0 }
+  ],
+  "shots": [1.5, 2.5, 4.0, 5.2, 8.0, 11.5, 12.8, 16.0, 20.0, 23.5, 25.5],
+  "film": { "from": 0, "to": 26, "every": 0.2 },
+  "audio": true }

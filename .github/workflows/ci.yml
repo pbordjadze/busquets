@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        take: [busquets, pivot, pulse, garden, watch, eyes, ghost, light]
+        take: [busquets, pivot, pulse, garden, watch, eyes, ghost, light, filings, lighthouse, hole]
     steps:
       - uses: actions/checkout@v5
         with: { persist-credentials: false }
@@ -53,8 +53,8 @@ jobs:
           cargo clippy --release -p pitch -p ${{ matrix.take }} -- -D warnings || echo "::warning::clippy has findings"
       - name: Play every plan
         run: |
-          # ghost and light read real matches: StatsBomb open data, fetched here, never committed (NOTICE.md)
-          if [ "${{ matrix.take }}" = ghost ] || [ "${{ matrix.take }}" = light ] || [ "${{ matrix.take }}" = busquets ]; then bash tools/fetch-statsbomb.sh; fi
+          # ghost, light and hole read real matches: StatsBomb open data, fetched here, never committed (NOTICE.md)
+          if [ "${{ matrix.take }}" = ghost ] || [ "${{ matrix.take }}" = light ] || [ "${{ matrix.take }}" = hole ] || [ "${{ matrix.take }}" = busquets ]; then bash tools/fetch-statsbomb.sh; fi
           mkdir -p build/out
           for p in takes/${{ matrix.take }}/plans/*.json; do
             n=$(basename "$p" .json)

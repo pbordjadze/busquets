@@ -1,0 +1,12 @@
+{ "_": "The Hole: the first moment, a dot dragged across the shape and let go; the next moment; a dot left far off.",
+  "size": [1179, 2556], "ppp": 3, "seconds": 22, "fps": 30,
+  "events": [
+    { "t": 2.0, "drag": [[60, 720], [113, 512]], "for": 2.5 },
+    { "t": 8.0, "tap": [200, 700] },
+    { "t": 10.0, "drag": [[300, 300], [250, 600]], "for": 2.0 },
+    { "t": 15.0, "tap": [200, 700] },
+    { "t": 17.0, "drag": [[100, 400], [150, 500]], "for": 1.5 }
+  ],
+  "shots": [1.0, 3.5, 4.4, 5.5, 7.0, 9.0, 12.5, 14.0, 16.0, 21.0],
+  "film": { "from": 0, "to": 22, "every": 0.2 },
+  "audio": true }

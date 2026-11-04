@@ -26,7 +26,7 @@ painting-company row 207; the names are working titles (the names are Paul's).
 ## The app
 
 `takes/busquets` is the one app (working title Busquets, `com.pbordjadze.busquets`): its home is a ring of
-seven glowing doors around you, a ball going round them; tap a door to enter a take, swipe in from
+ten glowing doors around you, a ball going round them; tap a door to enter a take, swipe in from
 the left edge to come back (each take keeps going where you left it). Each take is also a crate on its
 own (its `app` feature gives it its own C ABI); the one app turns that off and holds them all. CI
 builds only this app's IPA and the SideStore source lists only it.
@@ -40,6 +40,9 @@ builds only this app's IPA and the SideStore source lists only it.
 | `takes/watch` | The engine playing itself, eleven a side or a rondo; your hand on the dials (traits, shape). | `com.pbordjadze.busquets.watch` |
 | `takes/eyes` | Pivot over the shoulder, in 3D: scanning, feinting and weighting through your own eyes. | `com.pbordjadze.busquets.eyes` |
 | `takes/studies` | Four visual directions (night cam, paper cut, living lines, wash), each a loop of the rondo playing itself; web only. | |
+| `takes/filings` | Iron Filings: you never touch the ball. Drag yourself; your six teammates snap into a hexagon of triangles round you like filings round a magnet (each one clicks as it lands) and the ball goes round them on its own, each pass striking its triangle's note. Pressers sit on the edges the ball wants; move off them. Its own small world, not `pitch::World`. | `com.pbordjadze.busquets.filings` |
+| `takes/lighthouse` | Lighthouse: the rondo in the dark, the scan a turning beam. What it lit stays where you saw it and fades; hold to slow time and swing the beam, lift and the ball goes to the brightest teammate you remember. A cut ball flashes the presser you didn't see. | `com.pbordjadze.busquets.lighthouse` |
+| `takes/hole` | The Hole: a real 360 freeze-frame (StatsBomb, fetched at run time) at one of his passes, with him taken out; the shape strains where he stood; drag a dot and it breathes out near his pocket; lift to see where he was and the pass he played. Seven moments, picked by hand from Ghost's match. | `com.pbordjadze.busquets.hole` |
 | `takes/garden` | The meditative one: a slower endless rondo on pale ground; every pass leaves its trail in ink and the pitch is slowly drawn (kept between visits; shake to wash it clean). | `com.pbordjadze.busquets.garden` |
 
 Each is a crate: `src/lib.rs` the take (a `kit::Toy`), `src/bin/check.rs` its headless check,

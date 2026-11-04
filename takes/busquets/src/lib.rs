@@ -1,6 +1,6 @@
 //! Busquets (a working title): the one app, every take inside it.
 //!
-//! The way in is itself a little rondo: seven glowing doors keep a ring around you, each one a take
+//! The way in is itself a little rondo: ten glowing doors keep a ring around you, each one a take
 //! (its colour and a mark of its own), and a ball goes round between them. Tap a door and you are in.
 //! A swipe in from the screen's left edge brings you back; each take keeps going where you left it.
 //! No words, no chrome.
@@ -80,7 +80,10 @@ struct Door {
     make: fn(&mut Ctx, Option<&String>) -> anyhow::Result<Made>,
 }
 
-const DOORS: [Door; 7] = [
+const DOORS: [Door; 10] = [
+    Door { key: "filings", color: [0.86, 0.72, 0.62], make: make::<filings::Filings> },
+    Door { key: "lighthouse", color: [1.0, 0.93, 0.55], make: make::<lighthouse::Lighthouse> },
+    Door { key: "hole", color: [0.55, 0.95, 0.82], make: make::<hole::Hole> },
     Door { key: "pivot", color: [0.36, 0.78, 0.48], make: make::<pivot::Pivot> },
     Door { key: "pulse", color: [1.0, 0.8, 0.45], make: make::<pulse::Pulse> },
     Door { key: "garden", color: [0.9, 0.86, 0.76], make: make::<garden::Garden> },
@@ -138,7 +141,7 @@ pub struct Busquets {
 impl Busquets {
     fn door_at(&self, ctx: &Ctx, i: usize) -> [f32; 2] {
         let (w, h) = (ctx.width as f32, ctx.height as f32);
-        let r = w.min(h) * 0.34;
+        let r = w.min(h) * 0.37;
         let a = -std::f32::consts::FRAC_PI_2 + i as f32 * std::f32::consts::TAU / DOORS.len() as f32 + (self.time * 0.03).sin() * 0.05;
         [w * 0.5 + a.cos() * r, h * 0.5 + a.sin() * r]
     }
@@ -350,6 +353,30 @@ impl Toy for Busquets {
                     p.glow_ring(dd(-1.5, 0.0), 2.2 * s, 0.25 * s, 0.4 * s, a(0.6));
                     p.glow(dd(1.5, 0.0), dd(1.5, 0.0), 1.2 * s, 0.4 * s, a(1.0));
                 }
+                // a magnet and its filings, snapped into a hexagon
+                "filings" => {
+                    for k2 in 0..6 {
+                        let an = k2 as f32 * std::f32::consts::PI / 3.0 + 0.3;
+                        let (c2, s2) = (an.cos(), an.sin());
+                        p.glow(dd(c2 * 3.2, s2 * 3.2), dd(c2 * 4.6, s2 * 4.6), 0.3 * s, 0.25 * s, a(0.95));
+                    }
+                    p.glow(dd(0.0, 0.0), dd(0.0, 0.0), 1.2 * s, 0.4 * s, [1.0, 0.95, 0.88, self.fade]);
+                }
+                // a lamp and its beam
+                "lighthouse" => {
+                    let o = dd(-2.5, 2.5);
+                    p.glow(o, dd(4.5, -3.0), 0.12 * s, 0.4 * s, a(0.8));
+                    p.glow(o, dd(1.5, -5.0), 0.12 * s, 0.4 * s, a(0.8));
+                    p.glow(dd(2.2, -3.2), dd(2.2, -3.2), 2.0 * s, 1.5 * s, a(0.25));
+                    p.glow(o, o, 0.9 * s, 0.6 * s, [1.0, 0.97, 0.9, self.fade]);
+                }
+                // a shape with one missing
+                "hole" => {
+                    for (x, y) in [(-3.8, -1.5), (-1.0, -4.2), (3.0, -2.8), (3.6, 2.2), (-2.4, 3.6)] {
+                        p.glow(dd(x, y), dd(x, y), 0.65 * s, 0.35 * s, a(0.95));
+                    }
+                    p.glow_ring(dd(0.0, 0.0), 1.3 * s, 0.12 * s, 0.25 * s, a(0.45));
+                }
                 // a pass as light, an ember at its end
                 _ => {
                     p.glow(dd(-4.0, 3.0), dd(3.5, -3.0), 0.25 * s, 1.0 * s, a(0.8));
@@ -378,7 +405,7 @@ impl Toy for Busquets {
         let door = [(d[0] / k) as f64, (d[1] / k) as f64];
         let [w, h] = ctx.points();
         Some(Demo::new(
-            "Seven ways to play Busquets' job: the ball comes, you look, you pass.",
+            "Ten ways to be Busquets for a moment. Tap a door to go in.",
             vec![Stroke::tap(0.5, door), Stroke::drag(2.6, 0.7, [4.0, h * 0.55], [w * 0.55, h * 0.55])],
         ))
     }
@@ -393,7 +420,7 @@ impl Toy for Busquets {
                 "Behind every door, the same football: players who chase space and read the passer.",
                 "A pass is only as good as what was seen before the ball came.",
             ],
-            "Real: Ghost and Light replay real matches (StatsBomb open data). Drawn: the other five, simulated.",
+            "Real: Ghost, Light and The Hole use real matches (StatsBomb open data). Drawn: the other seven, simulated.",
         ))
     }
 

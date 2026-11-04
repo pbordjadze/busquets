@@ -53,5 +53,20 @@
     "id": "light",
     "title": "Light",
     "bg": "#030409"
+  },
+  {
+    "id": "filings",
+    "title": "Iron Filings",
+    "bg": "#0a0b0d"
+  },
+  {
+    "id": "lighthouse",
+    "title": "Lighthouse",
+    "bg": "#020305"
+  },
+  {
+    "id": "hole",
+    "title": "The Hole",
+    "bg": "#0b1a12"
   }
 ]

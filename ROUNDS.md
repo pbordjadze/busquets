@@ -33,3 +33,16 @@ One line a round (what changed, what the critic said, what is next).
    (everything else: a simulation). The home's says what every door shares. Ghost's scrub bar now
    ends short of the two marks. Proof: `takes/busquets/plans/rules*.json`; `tools/shell_text.py`
    draws the shell's text onto the Linux shots.
+6. Nov 4 (painting-company row 223): three new takes, the old seven kept for now. **Iron Filings** (you
+   never touch the ball: drag yourself and six teammates snap into triangles round you, bent by the
+   pressers; the ball goes round on its own, each pass its triangle's note; six clean in a row is the
+   full circle), **Lighthouse** (the rondo in the dark, the scan a turning beam, memory fading; hold
+   to slow time and aim, lift to pass to the brightest teammate you remember) and **The Hole** (seven
+   real 360 freeze-frames of his passes with him taken out; drag to his pocket, warmer as you near
+   it; lift to see him and his pass). Ten doors on the home, the new three at the top; each has its
+   ⓘ and ?. Critic round 1 (fresh, newcomer): The Hole first (new, a loop in six seconds, but warmth
+   invisible without sound), Lighthouse second (whose ball, who gets it?), Filings last (a rigid
+   hexagon, pressers without effect, could leave the screen). Fixed: the hole's dot warms, grows and
+   a ring tightens, a word at the top, a verdict on lift; the lighthouse marks who gets the ball and
+   flushes red when a hidden presser cuts it; the filings' hexagon bends round pressers, cut edges
+   show red, the full circle has pips and a chord, the ring stays on the plate.

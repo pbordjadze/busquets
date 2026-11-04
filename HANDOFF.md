@@ -1,5 +1,17 @@
 # Handoff (Nov 3, 2026)
 
+## Nov 4: three new takes (row 223)
+
+Iron Filings (`takes/filings`), Lighthouse (`takes/lighthouse`) and The Hole (`takes/hole`) are the
+top three doors of the home (ten now). Retiring the old seven is an owner decision still open, so
+none was removed; to retire one, drop its `Door` from `DOORS` in `takes/busquets/src/lib.rs`, its
+dependency in that Cargo.toml, and its `info-*`/`rules-*` plans (the plans' door taps are computed
+from the ring: regenerate them, the ring's radius is 0.37 of the short side). Filings is its own small
+world, not `pitch::World`. Lighthouse is `pitch::World` with `view = 0` and the beam a constant
+glance. The Hole fetches Ghost's match (events and 360) and reads seven hand-picked events
+(`MOMENTS`); his position is the frame's actor dot.
+
+
 The ask is painting-company row 207. ROUNDS.md has the rounds, README.md the engine and the touch
 grammar, NOTICE.md the sources.
 

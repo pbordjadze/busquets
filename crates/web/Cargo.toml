@@ -19,6 +19,9 @@ watch = { path = "../../takes/watch" }
 eyes = { path = "../../takes/eyes" }
 ghost = { path = "../../takes/ghost" }
 light = { path = "../../takes/light" }
+filings = { path = "../../takes/filings" }
+lighthouse = { path = "../../takes/lighthouse" }
+hole = { path = "../../takes/hole" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "=0.2.130"

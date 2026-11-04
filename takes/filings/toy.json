@@ -1,0 +1,5 @@
+{
+  "_": "The take's app (ios/build.sh): its display name (a working title; the name is Paul's) and bundle id. Inside the one app it is a door.",
+  "name": "Iron Filings",
+  "bundleIdentifier": "com.pbordjadze.busquets.filings"
+}

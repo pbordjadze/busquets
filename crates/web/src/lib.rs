@@ -25,6 +25,9 @@ pub async fn start_on(take: String, canvas: String) -> Result<(), JsValue> {
         "wash" => kit::web::run::<studies::Wash>(&canvas, &key).await,
         "ghost" => kit::web::run::<ghost::Ghost>(&canvas, &key).await,
         "light" => kit::web::run::<light::Light>(&canvas, &key).await,
+        "filings" => kit::web::run::<filings::Filings>(&canvas, &key).await,
+        "lighthouse" => kit::web::run::<lighthouse::Lighthouse>(&canvas, &key).await,
+        "hole" => kit::web::run::<hole::Hole>(&canvas, &key).await,
         _ => Err(JsValue::from_str("no such take")),
     }
 }
