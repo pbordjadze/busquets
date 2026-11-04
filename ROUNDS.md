@@ -46,3 +46,11 @@ One line a round (what changed, what the critic said, what is next).
    a ring tightens, a word at the top, a verdict on lift; the lighthouse marks who gets the ball and
    flushes red when a hidden presser cuts it; the filings' hexagon bends round pressers, cut edges
    show red, the full circle has pips and a chord, the ring stays on the plate.
+7. Nov 4 (row 223, relayed): the retirement confirmed, and the owner's notes. The app now has only the
+   three new doors; Pivot, Pulse, Garden, Light, Eyes and Ghost are out of it, Watch internal. Critic
+   round 2 (fresh): The Hole first (but warmth too narrow to show), Lighthouse (pressers must truly
+   vanish), Filings (no real decision). The notes moved each take: Filings became a false 9 (pressers
+   are drawn to you, so you pull them off the edges the ball wants); Lighthouse's payoff is no longer a
+   surprise presser but the lights coming on when your pass lands, every remembered ghost beside the
+   real player, a chord as full as your picture was right (a cut is now quiet); The Hole's reveal shows
+   the teammates he linked (open lines from his spot), the value of the unflashy part.

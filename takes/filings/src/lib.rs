@@ -320,14 +320,15 @@ impl Toy for Filings {
                     p.pos += push * 0.7;
                 }
             }
-            // you are a magnet: teammates come, pressers are pushed away (shove them off an edge)
+            // you draw them, like a false 9: pressers near you are pulled toward you and off the
+            // edges the ball wants (but never onto you)
             let a = p.pos - self.me;
             let d = a.len();
-            if d < 8.0 && d > 1e-4 {
-                p.pos += a.norm() * (9.0 * (1.0 - d / 8.0)) * dt;
+            if d < 11.0 && d > 2.8 {
+                p.pos -= a.norm() * (3.4 * (1.0 - d / 11.0).sqrt()) * dt;
             }
-            if d < 3.0 && d > 1e-4 {
-                p.pos += a.norm() * (3.0 - d);
+            if d < 2.5 && d > 1e-4 {
+                p.pos += a.norm() * (2.5 - d);
             }
         }
 
@@ -583,7 +584,7 @@ impl Toy for Filings {
         let from = [(a[0] / k) as f64, (a[1] / k) as f64];
         let [w, h] = ctx.points();
         let to = [if from[0] < w * 0.5 { w * 0.68 } else { w * 0.32 }, (from[1] + if from[1] < h * 0.5 { 150.0 } else { -150.0 }).clamp(140.0, h - 160.0)];
-        Some(Demo::new("Drag yourself: teammates snap to you, pressers get pushed.", vec![Stroke::drag(0.4, 1.8, from, to)]))
+        Some(Demo::new("Drag yourself: teammates snap to you, pressers follow you.", vec![Stroke::drag(0.4, 1.8, from, to)]))
     }
 
     fn rules(&self) -> Option<Rules> {
@@ -591,7 +592,7 @@ impl Toy for Filings {
             &[
                 "You never touch the ball: it goes round your teammates on its own.",
                 "Wherever you go they snap into triangles round you, like filings to a magnet.",
-                "You pull teammates and push pressers: lean into a presser to shove it off an edge it cuts (red).",
+                "You draw the pressers too, like a false 9: go near one and it follows you off the edge it cuts (red).",
                 "Each pass strikes its triangle's note.",
                 "Six clean passes in a row make the full circle.",
             ],

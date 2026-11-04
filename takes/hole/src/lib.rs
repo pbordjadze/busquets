@@ -143,6 +143,15 @@ fn read(events: &[u8], frames: &[u8]) -> anyhow::Result<Vec<Moment>> {
     Ok(out)
 }
 
+/// The teammates he had an open line to: within 30 m, no opponent within 1.6 m of the line.
+fn links(m: &Moment) -> Vec<V2> {
+    m.mates
+        .iter()
+        .copied()
+        .filter(|q| q.dist(m.him) < 30.0 && m.others.iter().all(|o| pitch::v2::closest_on_segment(*o, m.him, *q).0.dist(*o) > 1.6))
+        .collect()
+}
+
 enum State {
     Loading,
     Ready(Vec<Moment>),
@@ -483,6 +492,10 @@ impl Toy for Hole {
                 let x = if away < 0.0 { me[0] - 16.0 * k - lw } else { me[0] + 16.0 * k };
                 write(p, &label, [x, me[1] - 3.5 * cell], cell, [1.0, 1.0, 1.0, 0.85 * r], false);
             }
+            // what he held together: an open line to each teammate within reach (no opponent on it)
+            for q in links(m) {
+                p.glow(him, sc(q), 0.07 * s, 0.3 * s, [1.0, 0.85, 0.5, 0.55 * r]);
+            }
             p.glow(him, him, 0.9 * s, 3.0 * s, [1.0, 0.92, 0.7, 0.35 * r]);
             write(p, "HIM", [him[0], him[1] + 2.0 * s], cell * 0.8, [1.0, 0.97, 0.9, 0.9 * r], true);
             p.disc(him, 0.8 * s, 0.12 * s, [1.0, 0.97, 0.9, r]);
@@ -520,6 +533,10 @@ impl Toy for Hole {
             }
         };
         write(p, ask, [w * 0.5, top + 14.0 * cell * 0.8], cell, ink, true);
+        if self.shown.is_some() {
+            let n = links(m).len();
+            write(p, &format!("HE LINKED {n} TEAMMATES"), [w * 0.5, top + 26.0 * cell * 0.8], cell * 0.8, [1.0, 0.88, 0.6, 0.85], true);
+        }
         write(p, "STATSBOMB OPEN DATA", [18.0 * k, h - 30.0 * k], cell * 0.5, dim, false);
         // the key: his team gold, the other side blue
         let ky = h - 52.0 * k;
@@ -563,7 +580,7 @@ impl Toy for Hole {
             &[
                 "A real moment: everyone the camera saw as he passed, except Busquets.",
                 "Where he stood the shape strains; near his spot it breathes out.",
-                "Lift to see where he was and the pass he played. Tap for the next one.",
+                "Lift to see where he was, the teammates he linked, and the pass he played.",
             ],
             "Real: StatsBomb open data (a 360 freeze-frame), fetched as you open it. Drawn: the breathing.",
         ))

@@ -85,20 +85,13 @@ name = "busquets"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "eyes",
  "filings",
- "garden",
- "ghost",
  "hole",
- "light",
  "lighthouse",
  "log",
  "pitch",
- "pivot",
- "pulse",
  "serde_json",
  "toy-kit",
- "watch",
  "wgpu",
 ]
 

@@ -42,9 +42,9 @@ fn backdrop(px: vec2<f32>, w: vec2<f32>) -> vec4<f32> {
   c = c + vec3<f32>(0.18, 0.15, 0.09) * exp(-r / (u.scale * 2.2)) ;
   // time slowed: the dark goes a little blue
   c = c + vec3<f32>(0.0, 0.006, 0.02) * u.p1.y;
-  // a ball cut by someone you didn't see: a red flush from the edges
-  let edge = length(px / u.size - vec2<f32>(0.5));
-  c = c + vec3<f32>(0.14, 0.02, 0.01) * u.p1.w * smoothstep(0.35, 0.8, edge);
+  // your pass landed: the floodlights come on for a moment
+  let all = 1.0 - smoothstep(u.p1.x * 0.9, u.p1.x * 1.4, r);
+  c = mix(c, grass * 1.3, u.p1.w * all * 0.8);
   return vec4<f32>(c, 1.0);
 }
 "#;
@@ -71,8 +71,13 @@ pub struct Lighthouse {
     beam: f32,
     thumb: Option<(u64, [f32; 2])>,
     slow: f32,
-    /// A ball just cut: the dark flushes red for a moment.
+    /// Your pass landed: the whole pitch is lit for a moment, your remembered picture beside the
+    /// truth (1 → 0), and how right it was (0..1).
     lost: f32,
+    picture: f32,
+    right: f32,
+    /// The last pass was yours.
+    mine: bool,
     ages: Vec<f32>,
     flashes: Vec<(V2, f32, [f32; 3])>,
     trail: Vec<V2>,
@@ -131,6 +136,9 @@ impl Toy for Lighthouse {
             thumb: None,
             slow: 0.0,
             lost: 0.0,
+            picture: 0.0,
+            right: 0.0,
+            mine: false,
             ages: vec![9.0; n],
             flashes: Vec::new(),
             trail: Vec::new(),
@@ -210,6 +218,7 @@ impl Toy for Lighthouse {
         for e in self.world.drain() {
             match e {
                 Event::Pass { from, angle, length, yours, .. } => {
+                    self.mine = yours;
                     let deg = ((angle / std::f32::consts::TAU + 1.0) * 5.0).round() as i32 % 5;
                     let oct = if length > 16.0 { -1 } else { 0 };
                     let pan = (self.world.players[from].pos.x / 18.0).clamp(-1.0, 1.0);
@@ -224,17 +233,29 @@ impl Toy for Lighthouse {
                     if grace > 0.7 {
                         self.bells.strike(Note { freq: pentatonic(440.0, (self.world.chain % 5) as i32), amp: 0.08 * grace, decay: 2.0, pan: 0.0, bright: 0.3 });
                     }
+                    if self.mine && by != 0 {
+                        // the payoff: your pass landed, so the lights come on and you see how right your
+                        // picture was (every ghost beside the real player), a chord as full as you were right
+                        let others: Vec<f32> = self.world.players.iter().skip(1).map(|q| (-q.seen.dist(q.pos) / 3.0).exp()).collect();
+                        self.right = others.iter().sum::<f32>() / others.len().max(1) as f32;
+                        self.picture = 1.0;
+                        let n = 2 + (self.right * 4.0).round() as i32;
+                        for d in 0..n {
+                            self.bells.strike(Note { freq: pentatonic(330.0, d * 2), amp: 0.07, decay: 2.8, pan: 0.0, bright: 0.4 });
+                        }
+                        ctx.haptic();
+                    }
+                    self.mine = false;
                 }
                 Event::Poked { by, at } => {
-                    self.lost = 1.0;
-                    // the one you didn't see: the light finds him
+                    // the one you didn't see: the light finds him, gently; the rondo goes on
+                    self.mine = false;
                     let p = &mut self.world.players[by];
                     p.seen = p.pos;
                     p.seen_age = 0.0;
-                    self.flashes.push((p.pos, 0.0, [1.0, 0.45, 0.35]));
-                    self.flashes.push((at, 0.0, [1.0, 0.45, 0.35]));
-                    self.bells.strike(Note { freq: 61.7, amp: 0.25, decay: 1.2, pan: 0.0, bright: 2.5 });
-                    self.bells.strike(Note { freq: 92.5, amp: 0.12, decay: 1.0, pan: 0.0, bright: 1.0 });
+                    self.flashes.push((p.pos, 0.0, [0.9, 0.7, 0.6]));
+                    let _ = at;
+                    self.bells.strike(Note { freq: 98.0, amp: 0.08, decay: 0.8, pan: 0.0, bright: 0.6 });
                 }
                 _ => {}
             }
@@ -250,6 +271,7 @@ impl Toy for Lighthouse {
             self.trail.remove(0);
         }
         self.lost = (self.lost - dt * 0.9).max(0.0);
+        self.picture = (self.picture - dt / 1.8).max(0.0);
         for f in &mut self.flashes {
             f.1 += dt;
         }
@@ -266,7 +288,7 @@ impl Toy for Lighthouse {
         let pick = if w.yours() || w.incoming().is_some() { self.choice() } else { None };
         let mem: Vec<f32> = (0..w.players.len()).map(|i| self.memory(i)).collect();
         let mut enc = ctx.gpu.device.create_command_encoder(&Default::default());
-        self.dark.render(&ctx.gpu, &mut enc, target, size, &BackdropParams { time: self.time, scale: s, center: [0.0, 0.0], p: [ys[0], ys[1], self.beam, BEAM, REACH * s, self.slow, self.time, self.lost] });
+        self.dark.render(&ctx.gpu, &mut enc, target, size, &BackdropParams { time: self.time, scale: s, center: [0.0, 0.0], p: [ys[0], ys[1], self.beam, BEAM, REACH * s, self.slow, self.time, self.picture] });
         let p = &mut self.painter;
         let sc = |q: V2| view.to_screen(q);
         let lit = |i: usize| w.players[i].seen_age == 0.0;
@@ -316,6 +338,16 @@ impl Toy for Lighthouse {
                 }
             }
         }
+        // the picture: everyone as they really are, a thread from where you remembered them
+        if self.picture > 0.0 {
+            let k = self.picture;
+            for pl in w.players.iter().skip(1) {
+                let c = if pl.kind == Kind::Presser { [1.0, 0.55, 0.45] } else { [1.0, 0.95, 0.8] };
+                p.glow(sc(pl.seen), sc(pl.pos), 0.03 * s, 0.15 * s, [c[0], c[1], c[2], 0.5 * k]);
+                p.glow_ring(sc(pl.pos), 0.9 * s, 0.07 * s, 0.2 * s, [c[0], c[1], c[2], 0.8 * k]);
+            }
+            p.glow_ring(ys, (3.0 + 10.0 * (1.0 - k)) * s, 0.1 * s, 0.6 * s, [1.0, 0.92, 0.7, 0.5 * k * (0.4 + 0.6 * self.right)]);
+        }
         // you: the lamp
         p.glow(ys, ys, 0.7 * s, 2.0 * s, [1.0, 0.9, 0.6, 0.35]);
         p.glow(ys, ys, 0.6 * s, 0.15 * s, [1.0, 0.98, 0.92, 1.0]);
@@ -363,7 +395,7 @@ impl Toy for Lighthouse {
             &[
                 "It is dark: you see only what your beam lights, and what it lit fades like memory.",
                 "Hold to slow time and steer the beam; lift and the ball goes to the brightest teammate you remember.",
-                "Pressers vanish into the dark once the beam has passed, and they read your beam.",
+                "When your pass lands the lights come on: you see how right your picture was.",
             ],
             "Drawn: all of it, Pivot's simulated rondo at night.",
         ))

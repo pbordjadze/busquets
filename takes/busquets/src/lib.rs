@@ -1,6 +1,6 @@
 //! Busquets (a working title): the one app, every take inside it.
 //!
-//! The way in is itself a little rondo: ten glowing doors keep a ring around you, each one a take
+//! The way in is itself a little rondo: three glowing doors keep a ring around you, each one a take
 //! (its colour and a mark of its own), and a ball goes round between them. Tap a door and you are in.
 //! A swipe in from the screen's left edge brings you back; each take keeps going where you left it.
 //! No words, no chrome.
@@ -80,17 +80,10 @@ struct Door {
     make: fn(&mut Ctx, Option<&String>) -> anyhow::Result<Made>,
 }
 
-const DOORS: [Door; 10] = [
+const DOORS: [Door; 3] = [
     Door { key: "filings", color: [0.86, 0.72, 0.62], make: make::<filings::Filings> },
     Door { key: "lighthouse", color: [1.0, 0.93, 0.55], make: make::<lighthouse::Lighthouse> },
     Door { key: "hole", color: [0.55, 0.95, 0.82], make: make::<hole::Hole> },
-    Door { key: "pivot", color: [0.36, 0.78, 0.48], make: make::<pivot::Pivot> },
-    Door { key: "pulse", color: [1.0, 0.8, 0.45], make: make::<pulse::Pulse> },
-    Door { key: "garden", color: [0.9, 0.86, 0.76], make: make::<garden::Garden> },
-    Door { key: "watch", color: [0.6, 0.85, 1.0], make: make::<watch::Watch> },
-    Door { key: "eyes", color: [0.55, 0.62, 1.0], make: make::<eyes::Eyes> },
-    Door { key: "ghost", color: [0.92, 0.94, 1.0], make: make::<ghost::Ghost> },
-    Door { key: "light", color: [1.0, 0.55, 0.3], make: make::<light::Light> },
 ];
 
 const NIGHT: &str = r#"
@@ -265,7 +258,8 @@ impl Toy for Busquets {
         self.ball.2 += dt as f32 * 0.9;
         if self.ball.2 >= 1.0 {
             let (_, b, _) = self.ball;
-            let next = (b + 2 + (self.time as usize % 3)) % DOORS.len();
+            // to one of the other doors (never back to itself)
+            let next = (b + 1 + (self.time as usize % (DOORS.len() - 1))) % DOORS.len();
             self.ball = (b, next, 0.0);
             let f = kit::sound::pentatonic(220.0, b as i32);
             self.bells.strike(Note { freq: f, amp: 0.08, decay: 1.4, pan: 0.0, bright: 0.6 });
@@ -314,45 +308,6 @@ impl Toy for Busquets {
             p.glow_ring(*d, r, 0.35 * s, 0.6 * s, a(0.8));
             let dd = |x: f32, y: f32| [d[0] + x * s, d[1] + y * s];
             match DOORS[i].key {
-                // the pivot: you among teammates
-                "pivot" => {
-                    for (x, y) in [(-3.5, -2.5), (3.5, -2.5), (0.0, 3.5)] {
-                        p.glow(dd(x, y), dd(x, y), 0.9 * s, 0.4 * s, a(0.9));
-                    }
-                    p.glow(dd(0.0, 0.0), dd(0.0, 0.0), 1.3 * s, 0.4 * s, [1.0, 1.0, 1.0, self.fade]);
-                }
-                // a constellation
-                "pulse" => {
-                    let pts = [(-4.0, 2.0), (-1.0, -3.0), (2.5, -1.0), (4.0, 3.0)];
-                    for w2 in pts.windows(2) {
-                        p.glow(dd(w2[0].0, w2[0].1), dd(w2[1].0, w2[1].1), 0.15 * s, 0.3 * s, a(0.6));
-                    }
-                    for (x, y) in pts {
-                        p.glow(dd(x, y), dd(x, y), 0.5 * s, 0.8 * s, a(1.0));
-                    }
-                }
-                // an ink stroke
-                "garden" => p.glow(dd(-4.0, 2.5), dd(4.0, -2.5), 0.5 * s, 0.3 * s, a(0.9)),
-                // two teams
-                "watch" => {
-                    for k2 in 0..6 {
-                        let x = -3.5 + (k2 % 3) as f32 * 3.5;
-                        let y = if k2 < 3 { -2.5 } else { 2.5 };
-                        let cc = if k2 < 3 { [1.0, 0.45, 0.4, self.fade] } else { a(1.0) };
-                        p.glow(dd(x, y), dd(x, y), 0.6 * s, 0.3 * s, cc);
-                    }
-                }
-                // a horizon and a figure
-                "eyes" => {
-                    p.glow(dd(-5.0, -0.5), dd(5.0, -0.5), 0.15 * s, 0.3 * s, a(0.7));
-                    p.glow(dd(-1.0, 1.0), dd(-1.0, 3.5), 0.8 * s, 0.3 * s, a(0.9));
-                    p.glow(dd(-1.0, 0.0), dd(-1.0, 0.0), 0.6 * s, 0.3 * s, a(0.9));
-                }
-                // a ghost and its real self
-                "ghost" => {
-                    p.glow_ring(dd(-1.5, 0.0), 2.2 * s, 0.25 * s, 0.4 * s, a(0.6));
-                    p.glow(dd(1.5, 0.0), dd(1.5, 0.0), 1.2 * s, 0.4 * s, a(1.0));
-                }
                 // a magnet and its filings, snapped into a hexagon
                 "filings" => {
                     for k2 in 0..6 {
@@ -377,11 +332,7 @@ impl Toy for Busquets {
                     }
                     p.glow_ring(dd(0.0, 0.0), 1.3 * s, 0.12 * s, 0.25 * s, a(0.45));
                 }
-                // a pass as light, an ember at its end
-                _ => {
-                    p.glow(dd(-4.0, 3.0), dd(3.5, -3.0), 0.25 * s, 1.0 * s, a(0.8));
-                    p.glow(dd(3.5, -3.0), dd(3.5, -3.0), 0.8 * s, 1.2 * s, [1.0, 0.8, 0.5, self.fade]);
-                }
+                _ => {}
             }
         }
         // the ball going round
@@ -405,7 +356,7 @@ impl Toy for Busquets {
         let door = [(d[0] / k) as f64, (d[1] / k) as f64];
         let [w, h] = ctx.points();
         Some(Demo::new(
-            "Ten ways to be Busquets for a moment. Tap a door to go in.",
+            "Three ways to be Busquets for a moment. Tap a door to go in.",
             vec![Stroke::tap(0.5, door), Stroke::drag(2.6, 0.7, [4.0, h * 0.55], [w * 0.55, h * 0.55])],
         ))
     }
@@ -420,7 +371,7 @@ impl Toy for Busquets {
                 "Behind every door, the same football: players who chase space and read the passer.",
                 "A pass is only as good as what was seen before the ball came.",
             ],
-            "Real: Ghost, Light and The Hole use real matches (StatsBomb open data). Drawn: the other seven, simulated.",
+            "Real: The Hole is a real match (StatsBomb open data). Drawn: Iron Filings and Lighthouse, simulated.",
         ))
     }
 

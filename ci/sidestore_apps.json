@@ -6,7 +6,7 @@
       "name": "Busquets",
       "bundleIdentifier": "com.pbordjadze.busquets",
       "subtitle": "Receive, scan, decide, release, at your own pace",
-      "localizedDescription": "Sketches of being the pivot, in one app. Tap a door: Iron Filings (you never touch the ball), Lighthouse (the scan is a beam), The Hole (a real moment with him taken out), Pivot, Pulse, Rondo Garden, Watch, Eyes, Ghost (real matches replayed; StatsBomb open data fetched at run time, as in The Hole) or Light (his passes as light). Swipe in from the left edge to come back. Working title.",
+      "localizedDescription": "Sketches of being the pivot, in one app. Tap a door: Iron Filings (you never touch the ball; your teammates snap round you and the pressers follow you), Lighthouse (the scan is a beam; your memory is the map) or The Hole (a real moment with him taken out; StatsBomb open data fetched at run time). Swipe in from the left edge to come back. Working title.",
       "icon": "busquets-icon.png",
       "iconSource": "takes/busquets/icon.png",
       "tintColor": "#5CC77A",

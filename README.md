@@ -26,12 +26,16 @@ painting-company row 207; the names are working titles (the names are Paul's).
 ## The app
 
 `takes/busquets` is the one app (working title Busquets, `com.pbordjadze.busquets`): its home is a ring of
-ten glowing doors around you, a ball going round them; tap a door to enter a take, swipe in from
+three glowing doors around you, a ball going round them; tap a door to enter a take, swipe in from
 the left edge to come back (each take keeps going where you left it). Each take is also a crate on its
 own (its `app` feature gives it its own C ABI); the one app turns that off and holds them all. CI
 builds only this app's IPA and the SideStore source lists only it.
 
 ## The takes
+
+Since Nov 4 (painting-company row 223) the app holds only Iron Filings, Lighthouse and The Hole. Pivot,
+Pulse, Garden, Light, Eyes and Ghost are retired from the app (their crates stay here, and on the web
+build); Watch is an internal sandbox (`cargo run -p watch --bin watch-check`, the web build), not a door.
 
 | take | what it is | bundle id |
 | --- | --- | --- |

@@ -3,10 +3,11 @@
 ## Nov 4: three new takes (row 223)
 
 Iron Filings (`takes/filings`), Lighthouse (`takes/lighthouse`) and The Hole (`takes/hole`) are the
-top three doors of the home (ten now). Retiring the old seven is an owner decision still open, so
-none was removed; to retire one, drop its `Door` from `DOORS` in `takes/busquets/src/lib.rs`, its
-dependency in that Cargo.toml, and its `info-*`/`rules-*` plans (the plans' door taps are computed
-from the ring: regenerate them, the ring's radius is 0.37 of the short side). Filings is its own small
+app's only three doors. Retired from the app, in the same release (owner's decision): Pivot, Pulse,
+Garden, Light, Eyes and Ghost; Watch is an internal sandbox with no door. Their crates, checks and web
+pages stay; `crates/real` (Ghost's loader) feeds The Hole. A door is a `Door` in `DOORS`
+(`takes/busquets/src/lib.rs`) plus its dependency there and its `info-*`/`rules-*` plans, whose door
+taps are computed from the ring (radius 0.37 of the short side, door i at -90° + i·360°/n). Filings is its own small
 world, not `pitch::World`. Lighthouse is `pitch::World` with `view = 0` and the beam a constant
 glance. The Hole fetches Ghost's match (events and 360) and reads seven hand-picked events
 (`MOMENTS`); his position is the frame's actor dot.

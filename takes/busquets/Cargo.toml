@@ -16,13 +16,6 @@ wgpu = { workspace = true }
 anyhow = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }
-pivot = { path = "../pivot", default-features = false }
-pulse = { path = "../pulse", default-features = false }
-garden = { path = "../garden", default-features = false }
-watch = { path = "../watch", default-features = false }
-eyes = { path = "../eyes", default-features = false }
-ghost = { path = "../ghost", default-features = false }
-light = { path = "../light", default-features = false }
 filings = { path = "../filings", default-features = false }
 lighthouse = { path = "../lighthouse", default-features = false }
 hole = { path = "../hole", default-features = false }
